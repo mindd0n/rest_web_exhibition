@@ -213,7 +213,7 @@ function useButtonImageData(src, wallType) {
       setCanvas(cvs);
       setReady(true);
     };
-    img.onerror = () => { if (!cancelled) setReady(false); };
+    img.onerror = () => { if (!cancelled) { setReady(false); console.warn('이미지 로딩 실패:', src); } };
     img.src = src;
     return () => { cancelled = true; };
   }, [src, wallType]);
@@ -258,24 +258,19 @@ const Button = React.memo(function Button({
   const isHovered = hoveredObject === buttonKey;
   const [size, texture, image, canvas, ready] = useButtonImageData(isHovered ? hoverSrc : src, wallType);
   const z = position && position[2] !== undefined ? position[2] : 0.05;
+  const meshRef = useRef();
   
-  // 클릭 이벤트 처리 개선
   const handleClick = useCallback((e) => {
-    e.stopPropagation(); // 이벤트 버블링 방지
     const pos = Array.isArray(position) ? position : [0, 0];
     if (!image || !texture || !canvas) return;
     const uv = e.uv;
     if (!uv) return;
-    // plane 크기와 이미지 크기 비율 보정
-    const [planeWidth, planeHeight] = size;
     const x = Math.floor(uv.x * image.naturalWidth);
     const y = Math.floor((1 - uv.y) * image.naturalHeight);
-    // 혹시라도 plane과 이미지 비율이 다르면 아래처럼 보정
-    // const x = Math.floor(uv.x * planeWidth / planeWidth * image.naturalWidth);
-    // const y = Math.floor((1 - uv.y) * planeHeight / planeHeight * image.naturalHeight);
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const alpha = ctx.getImageData(x, y, 1, 1).data[3] / 255;
-    if (alpha > 0.1) {
+    if (alpha > 0.05) {
+      e.stopPropagation();
       if (controlsRef && controlsRef.current && controlsRef.current.object) {
         const camera = controlsRef.current.object;
         const camPos = camera.position.clone();
@@ -285,29 +280,61 @@ const Button = React.memo(function Button({
         setSavedCamera({ position: camPos, lookAt });
       }
       setZoomTarget(getZoomTargetForButton([...pos, z], wallType));
-      setHoveredObject(buttonKey); // 클릭 시 hoveredObject도 설정
-      setSelectedButton(buttonKey); // 클릭 시 selectedButton 설정
+      setHoveredObject(null);
+      setSelectedButton(buttonKey);
     }
   }, [position, image, texture, canvas, controlsRef, setSavedCamera, setZoomTarget, setHoveredObject, buttonKey, wallType, z, setSelectedButton, size]);
 
+  // mesh의 userData에 image, canvas, handleClick 저장
+  useEffect(() => {
+    if (meshRef.current) {
+      meshRef.current.userData.buttonProps = {
+        image,
+        canvas,
+        handleClick: (e) => {
+          // 클릭 처리 로직 복사
+          const pos = Array.isArray(position) ? position : [0, 0];
+          if (!image || !texture || !canvas) return;
+          const uv = e.uv;
+          if (!uv) return;
+          const x = Math.floor(uv.x * image.naturalWidth);
+          const y = Math.floor((1 - uv.y) * image.naturalHeight);
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          const alpha = ctx.getImageData(x, y, 1, 1).data[3] / 255;
+          if (alpha > 0.05) {
+            if (controlsRef && controlsRef.current && controlsRef.current.object) {
+              const camera = controlsRef.current.object;
+              const camPos = camera.position.clone();
+              const dir = new THREE.Vector3();
+              camera.getWorldDirection(dir);
+              const lookAt = camPos.clone().add(dir.multiplyScalar(100));
+              setSavedCamera({ position: camPos, lookAt });
+            }
+            setZoomTarget(getZoomTargetForButton([...pos, z], wallType));
+            setHoveredObject(null);
+            setSelectedButton(buttonKey);
+          }
+        }
+      };
+    }
+  }, [image, canvas, handleClick, position, texture, controlsRef, setSavedCamera, setZoomTarget, setHoveredObject, buttonKey, wallType, z, setSelectedButton, size]);
+
   // 호버 이벤트 처리 개선
   const handlePointerMove = useCallback((e) => {
-    e.stopPropagation();
     const pos = Array.isArray(position) ? position : [0, 0];
     if (!image || !texture || !canvas) return;
     const uv = e.uv;
     if (!uv) return;
-    // plane 크기와 이미지 크기 비율 보정
     const [planeWidth, planeHeight] = size;
     const x = Math.floor(uv.x * image.naturalWidth);
     const y = Math.floor((1 - uv.y) * image.naturalHeight);
-    // const x = Math.floor(uv.x * planeWidth / planeWidth * image.naturalWidth);
-    // const y = Math.floor((1 - uv.y) * planeHeight / planeHeight * image.naturalHeight);
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const alpha = ctx.getImageData(x, y, 1, 1).data[3] / 255;
-    if (alpha > 0.1 && hoveredObject !== buttonKey) {
+    if (alpha > 0.05 && hoveredObject !== buttonKey) {
+      e.stopPropagation(); // 그림 부분만 stopPropagation
       setHoveredObject(buttonKey);
     }
+    // 투명 부분에서는 stopPropagation을 호출하지 않음 → 이벤트가 다음 plane으로 전달됨
   }, [position, image, texture, canvas, hoveredObject, buttonKey, setHoveredObject, size]);
 
   const handlePointerOut = useCallback(() => {
@@ -320,6 +347,7 @@ const Button = React.memo(function Button({
 
   return (
     <mesh
+      ref={meshRef}
       position={Array.isArray(position) ? position : [0, 0, z]}
       onClick={handleClick}
       onPointerMove={handlePointerMove}
@@ -580,11 +608,17 @@ export default function RoomScene() {
                 </mesh>
                 {/* 벽 중앙에 버튼 추가 */}
                 {wallButtonData[wall.type]?.map((btn, idx) => {
-                  let pos = [0, 0, 0.01];
-                  if (wall.type === 'ceiling') pos = [0, 0, -0.05];
-                  else if (wall.type === 'floor') pos = [0, 0, 0.05];
-                  // 전면 벽에서 btn_p_go만 z=0.02로 더 앞으로
-                  else if (wall.type === 'front' && btn.src.includes('btn_p_go')) pos = [0, 0, 0.02];
+                  let z;
+                  if (wall.type === 'front' && btn.src.includes('btn_p_tree')) {
+                    z = -0.05; // tree만 확실히 뒤로!
+                  } else {
+                    let baseZ = 0.01;
+                    if (wall.type === 'ceiling') baseZ = -0.05;
+                    else if (wall.type === 'floor') baseZ = 0.05;
+                    else if (wall.type === 'front' && btn.src.includes('btn_p_go')) baseZ = 0.02;
+                    z = baseZ + idx * 0.01;
+                  }
+                  const pos = [0, 0, z];
                   const buttonKey = `${wall.type}_btn_${idx}`;
                   const hoverSrc = btn.src.replace(/\.png$/, '_hover.png');
                   return (
@@ -607,62 +641,6 @@ export default function RoomScene() {
                 })}
               </group>
             ))}
-            {/* 천장 버튼 */}
-            <group position={[0, roomHeight / 2, 0]}>
-              <mesh rotation={[Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[roomWidth, roomDepth]} />
-                <meshStandardMaterial 
-                  map={wallTextures.ceiling}
-                  color={wallTextures.ceiling ? undefined : "#f5f5e6"}
-                  roughness={0.7}
-                  metalness={0.12}
-                  side={THREE.DoubleSide}
-                />
-              </mesh>
-              {wallButtonData.ceiling.map((btn, idx) => (
-                    <Button
-                  key={btn.src}
-                  type={`ceiling_btn_${idx}`}
-                  position={[0, 0]}
-                  src={btn.src}
-                  wallType={'ceiling'}
-                      setZoomTarget={setZoomTarget}
-                  setSavedCamera={setSavedCamera}
-                      setHoveredObject={setHoveredObject}
-                      hoveredObject={hoveredObject}
-                  controlsRef={controlsRef}
-                  setSelectedButton={setSelectedButton}
-                />
-              ))}
-            </group>
-            {/* 바닥 버튼 */}
-            <group position={[0, -roomHeight / 2, 0]}>
-              <mesh rotation={[-Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[roomWidth, roomDepth]} />
-                <meshStandardMaterial 
-                  map={wallTextures.floor}
-                  color={wallTextures.floor ? undefined : "#777777"}
-                  roughness={1.0}
-                  metalness={0.0}
-                  side={THREE.DoubleSide}
-                />
-              </mesh>
-              {wallButtonData.floor.map((btn, idx) => (
-                    <Button
-                  key={btn.src}
-                  type={`floor_btn_${idx}`}
-                  position={[0, 0]}
-                  src={btn.src}
-                  wallType={'floor'}
-                      setZoomTarget={setZoomTarget}
-                  setSavedCamera={setSavedCamera}
-                      setHoveredObject={setHoveredObject}
-                      hoveredObject={hoveredObject}
-                  controlsRef={controlsRef}
-                  setSelectedButton={setSelectedButton}
-                />
-              ))}
-              </group>
           </group>
         </>
       );
@@ -691,11 +669,6 @@ export default function RoomScene() {
           width: "100vw",
           height: "100vh",
           cursor: cursor,
-        }}
-        onPointerDown={(e) => {
-          if (e.button === 0) {
-            setCursor(`url(/images/cursor-click.png) 16 44, auto`);
-          }
         }}
         onPointerUp={(e) => {
           if (e.button === 0) {
@@ -762,6 +735,7 @@ export default function RoomScene() {
         onClose={() => {
           setSelectedButton(null);
           setZoomTarget(null);
+          setHoveredObject(null);
         }}
         buttonType={selectedButton}
       />
