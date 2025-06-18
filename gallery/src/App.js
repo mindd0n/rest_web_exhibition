@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import RoomScene from './components/Room';
-import IntroScreen from './components/IntroScreen';
+import IntroScreen from './components/IntroScreen.jsx';
 import LoadingScreen from './components/LoadingScreen';
 import RightBottomControls from './components/RightBottomControls';
 import { Canvas } from '@react-three/fiber';
