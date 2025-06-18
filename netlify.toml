@@ -1,3 +1,4 @@
 [build]
-  publish = "gallery"
+  base = "gallery"
+  publish = "dist"
   command = "npm run build" 
