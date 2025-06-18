@@ -1,0 +1,3 @@
+[build]
+  publish = "gallery/public/cocooon-gallery/dist"
+  command = "npm run build" 
