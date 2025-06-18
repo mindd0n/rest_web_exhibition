@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import * as THREE from 'three';
 
-// 벽/천장/바닥별 plane 전체를 꽉 채우는 크기 반환
+// 벽/천장/바닥별 plane 전체를 꽉 채우는 크기 반환 (Room.jsx와 동일하게 맞춤)
 const WALL_SIZES = {
-  front:  [166.68, 150],
-  back:   [166.68, 150],
-  left:   [166.68, 150],
-  right:  [166.68, 150],
-  ceiling:[166.68, 166.68],
-  floor:  [166.68, 166.68],
+  front:  [166.68, 150],   // roomWidth, roomHeight
+  back:   [166.68, 150],   // roomWidth, roomHeight
+  left:   [166.68, 150],   // roomWidth, roomHeight
+  right:  [166.68, 150],   // roomWidth, roomHeight
+  ceiling:[166.68, 166.68],// roomWidth, roomDepth (정사각형)
+  floor:  [166.68, 166.68] // roomWidth, roomDepth (정사각형)
 };
 
 export const useButtonImageData = (src, wallType) => {

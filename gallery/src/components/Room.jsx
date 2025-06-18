@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import BGMControl from './BGMControl';
 import { EffectComposer, Outline } from '@react-three/postprocessing';
 import './styles.css';
 import { useTexture } from '@react-three/drei';
@@ -204,7 +203,9 @@ const Button = React.memo(function Button({
   hoverSrc, 
   controlsRef,
   setSelectedButton,
-  animateCamera
+  animateCamera,
+  btnIdx,
+  btnTotal
 }) {
   const isHovered = hoveredObject === buttonKey;
   const [size, texture, image, canvas, ready] = useButtonImageData(isHovered ? hoverSrc : src, wallType);
@@ -212,7 +213,8 @@ const Button = React.memo(function Button({
   const meshRef = useRef();
   
   const handleClick = useCallback((e) => {
-    console.log('Button handleClick', buttonKey);
+    // 모든 벽면 버튼 클릭 시 로그
+    console.log(`벽면 버튼 클릭: ${buttonKey}`);
     const pos = Array.isArray(position) ? position : [0, 0];
     if (!image || !texture || !canvas) return;
     const uv = e.uv;
@@ -224,7 +226,6 @@ const Button = React.memo(function Button({
     if (alpha > 0.05) {
       e.stopPropagation();
       const zoomTarget = getZoomTargetForButton(pos, wallType);
-      console.log('Button animateCamera to', zoomTarget);
       animateCamera(
         {
           position: zoomTarget.position,
@@ -261,10 +262,19 @@ const Button = React.memo(function Button({
 
   if (!ready) return null;
 
+  // 바닥/천장 버튼 중앙 분산 위치 보정
+  let renderPos = Array.isArray(position) ? position : [0, 0, z];
+  if ((wallType === 'ceiling' || wallType === 'floor') && btnTotal > 1 && size[0]) {
+    const gap = 10; // 버튼 간 여백
+    const totalWidth = btnTotal * size[0] + (btnTotal - 1) * gap;
+    const xOffset = (btnIdx - (btnTotal - 1) / 2) * (size[0] + gap);
+    renderPos = [xOffset, 0, z];
+  }
+
   return (
     <mesh
       ref={meshRef}
-      position={Array.isArray(position) ? position : [0, 0, z]}
+      position={renderPos}
       onClick={handleClick}
       onPointerMove={handlePointerMove}
       onPointerOut={handlePointerOut}
@@ -311,7 +321,10 @@ const wallButtonFolders = {
 };
 const wallButtonData = {};
 Object.entries(wallButtonFiles).forEach(([wall, files]) => {
-  wallButtonData[wall] = files.map(f => ({ src: `/images/buttons/${wallButtonFolders[wall]}/${f}` }));
+  wallButtonData[wall] = files.map(f => {
+    const key = f.replace(/\.png$/, '');
+    return { key, src: `/images/buttons/${wallButtonFolders[wall]}/${f}` };
+  });
 });
 
 // getZoomTargetForButton 함수를 일반 함수로 변경
@@ -342,25 +355,25 @@ const Room = ({
   setSelectedButton,
   animateCamera
 }) => {
-  // 텍스처를 메모이제이션
-  const wallTextures = useMemo(() => ({
+      // 텍스처를 메모이제이션
+      const wallTextures = useMemo(() => ({
     front: loadTexture('/images/walls/wall_photo.png', null),
     right: loadTexture('/images/walls/wall_home.png', null),
     back: loadTexture('/images/walls/wall_walk.png', null),
     left: loadTexture('/images/walls/wall_bus-stop.png', null),
     floor: loadTexture('/images/walls/wall_floor.png', null),
     ceiling: loadTexture('/images/walls/wall_ceiling.png', null),
-  }), []);
+      }), []);
 
-  const glowTexture = useMemo(() => loadTexture('/images/btn_enter_hover.png', null), []);
-  
-  // Walkpath 버튼 텍스처
-  const walkpathTextures = useMemo(() => ({
-    sun: loadTexture('/images/buttons/btn_walkpath_sun.png', getUVTransform(buttonBBoxes.sun)),
-    path: loadTexture('/images/buttons/btn_walkpath_path.png', getUVTransform(buttonBBoxes.path)),
-    sign: loadTexture('/images/buttons/btn_walkpath_sign.png', getUVTransform(buttonBBoxes.sign)),
-    bridge: loadTexture('/images/buttons/btn_walkpath_bridge.png', getUVTransform(buttonBBoxes.bridge)),
-  }), []);
+      const glowTexture = useMemo(() => loadTexture('/images/btn_enter_hover.png', null), []);
+      
+      // Walkpath 버튼 텍스처
+      const walkpathTextures = useMemo(() => ({
+        sun: loadTexture('/images/buttons/btn_walkpath_sun.png', getUVTransform(buttonBBoxes.sun)),
+        path: loadTexture('/images/buttons/btn_walkpath_path.png', getUVTransform(buttonBBoxes.path)),
+        sign: loadTexture('/images/buttons/btn_walkpath_sign.png', getUVTransform(buttonBBoxes.sign)),
+        bridge: loadTexture('/images/buttons/btn_walkpath_bridge.png', getUVTransform(buttonBBoxes.bridge)),
+      }), []);
 
   // 버튼 텍스처 미리 useMemo로 준비
   const wallButtonTextures = useMemo(() => {
@@ -371,85 +384,113 @@ const Room = ({
     return obj;
   }, []);
 
-  return (
-    <>
-      {/* 조명 추가 */}
+      return (
+        <>
+          {/* 조명 추가 */}
       <ambientLight intensity={1.5} color="#ffffff" />
-      <directionalLight position={[0, 100, 100]} intensity={1.2} />
+          <directionalLight position={[0, 100, 100]} intensity={1.2} />
       <directionalLight position={[0, 100, -100]} intensity={1.2} />
       <directionalLight position={[100, 100, 0]} intensity={1.2} />
       <directionalLight position={[-100, 100, 0]} intensity={1.2} />
       <directionalLight position={[0, -100, 0]} intensity={0.2} />
       <directionalLight position={[0, 100, 0]} intensity={2.0} />
-      {/* 벽과 기본 구조 */}
-      <group>
-        {/* 바닥 */}
-        <group position={[0, -roomHeight / 2, 0]}>
-          <mesh rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[roomWidth, roomDepth]} />
-            <meshStandardMaterial 
-              map={wallTextures.floor}
+          {/* 벽과 기본 구조 */}
+          <group>
+            {/* 바닥 */}
+            <group position={[0, -roomHeight / 2, 0]}>
+              <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[roomWidth, roomDepth]} />
+                <meshStandardMaterial 
+                  map={wallTextures.floor}
               color={wallTextures.floor ? undefined : "#777777"}
               roughness={1.0}
               metalness={0.0}
               side={THREE.DoubleSide}
             />
-          </mesh>
-        </group>
-        {/* 천장 */}
-        <group position={[0, roomHeight / 2, 0]}>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[roomWidth, roomDepth]} />
-            <meshStandardMaterial 
-              map={wallTextures.ceiling}
+              </mesh>
+            </group>
+            {/* 천장 */}
+            <group position={[0, roomHeight / 2, 0]}>
+              <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[roomWidth, roomDepth]} />
+                <meshStandardMaterial 
+                  map={wallTextures.ceiling}
               color={wallTextures.ceiling ? undefined : "#f5f5e6"}
               roughness={0.7}
               metalness={0.12}
               side={THREE.DoubleSide}
             />
-          </mesh>
-        </group>
-        {/* 벽들 */}
-        {[
-          { pos: [0, 0, -roomDepth / 2], rot: [0, 0, 0], tex: wallTextures.front, type: 'front' },
-          { pos: [0, 0, roomDepth / 2], rot: [0, Math.PI, 0], tex: wallTextures.back, type: 'back' },
-          { pos: [-roomWidth / 2, 0, 0], rot: [0, Math.PI / 2, 0], tex: wallTextures.left, type: 'left' },
-          { pos: [roomWidth / 2, 0, 0], rot: [0, -Math.PI / 2, 0], tex: wallTextures.right, type: 'right' },
-        ].map((wall, i) => (
-          <group key={i} position={wall.pos} rotation={wall.rot}>
-            <mesh>
-              <planeGeometry args={[roomWidth, roomHeight]} />
-              <meshStandardMaterial 
-                map={wall.tex}
-                color={wall.tex ? undefined : "#cccccc"}
-                roughness={0.7}
-                metalness={0.12}
-                side={THREE.DoubleSide}
-              />
-            </mesh>
+              </mesh>
+            </group>
+            {/* 벽들 */}
+            {[
+              { pos: [0, 0, -roomDepth / 2], rot: [0, 0, 0], tex: wallTextures.front, type: 'front' },
+              { pos: [0, 0, roomDepth / 2], rot: [0, Math.PI, 0], tex: wallTextures.back, type: 'back' },
+              { pos: [-roomWidth / 2, 0, 0], rot: [0, Math.PI / 2, 0], tex: wallTextures.left, type: 'left' },
+              { pos: [roomWidth / 2, 0, 0], rot: [0, -Math.PI / 2, 0], tex: wallTextures.right, type: 'right' },
+              { pos: [0, roomHeight / 2, 0], rot: [Math.PI / 2, 0, 0], tex: wallTextures.ceiling, type: 'ceiling' },
+              { pos: [0, -roomHeight / 2, 0], rot: [-Math.PI / 2, 0, 0], tex: wallTextures.floor, type: 'floor' },
+            ].map((wall, i) => (
+              <group key={i} position={wall.pos} rotation={wall.rot}>
+                <mesh>
+                  <planeGeometry args={[roomWidth, roomHeight]} />
+                  <meshStandardMaterial 
+                    map={wall.tex}
+                    color={wall.tex ? undefined : "#cccccc"}
+                    roughness={0.7}
+                    metalness={0.12}
+                    side={THREE.DoubleSide}
+                  />
+                </mesh>
             {/* 벽 중앙에 버튼 추가 */}
             {wallButtonData[wall.type]?.map((btn, idx) => {
               let z;
+              let pos = [0, 0, 0];
               if (wall.type === 'front' && btn.src.includes('btn_p_tree')) {
-                z = -0.05; // tree만 확실히 뒤로!
+                z = -0.05;
+              } else if (wall.type === 'back' && btn.key === 'btn_w_sign') {
+                z = 0.09;
+              } else if (wall.type === 'back' && btn.key === 'btn_w_bridge') {
+                z = 0.07;
+              } else if (wall.type === 'ceiling' || wall.type === 'floor') {
+                z = 0.2;
+                // Button에서 size[0]을 받아서 위치 계산하도록 btnWidth, total, idx 전달
+                const total = wallButtonData[wall.type].length;
+                pos = [0, 0, z]; // Button에서 보정
+                return (
+                  <Button
+                    key={btn.key}
+                    type={`${wall.type}_btn_${idx}`}
+                    buttonKey={btn.key}
+                    position={pos}
+                    src={btn.src}
+                    hoverSrc={btn.src.replace(/\.png$/, '_hover.png')}
+                    wallType={wall.type}
+                    setHoveredObject={setHoveredObject}
+                    hoveredObject={hoveredObject}
+                    controlsRef={buttonRef}
+                    setSelectedButton={setSelectedButton}
+                    animateCamera={animateCamera}
+                    btnIdx={idx}
+                    btnTotal={total}
+                  />
+                );
               } else {
                 let baseZ = 0.01;
                 if (wall.type === 'ceiling') baseZ = -0.05;
                 else if (wall.type === 'floor') baseZ = 0.05;
                 else if (wall.type === 'front' && btn.src.includes('btn_p_go')) baseZ = 0.02;
                 z = baseZ + idx * 0.01;
+                pos = [0, 0, z];
               }
-              const pos = [0, 0, z];
-              const buttonKey = `${wall.type}_btn_${idx}`;
-              const hoverSrc = btn.src.replace(/\.png$/, '_hover.png');
               return (
                 <Button
-                  key={btn.src}
+                  key={btn.key}
                   type={`${wall.type}_btn_${idx}`}
-                  buttonKey={buttonKey}
+                  buttonKey={btn.key}
                   position={pos}
                   src={btn.src}
-                  hoverSrc={hoverSrc}
+                  hoverSrc={btn.src.replace(/\.png$/, '_hover.png')}
                   wallType={wall.type}
                   setHoveredObject={setHoveredObject}
                   hoveredObject={hoveredObject}
@@ -459,14 +500,14 @@ const Room = ({
                 />
               );
             })}
+              </group>
+            ))}
           </group>
-        ))}
-      </group>
-    </>
-  );
-};
+        </>
+      );
+    };
 
-export default function RoomScene() {
+export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
   const [isHovered, setIsHovered] = useState(false);
   const buttonRef = useRef();
   const [outlineReady, setOutlineReady] = useState(false);
@@ -476,6 +517,27 @@ export default function RoomScene() {
   const [isAnimating, setIsAnimating] = useState(false);
   const controlsRef = useRef();
   const [restoreView, setRestoreView] = useState(null);
+  const [texturesLoaded, setTexturesLoaded] = useState(false);
+
+  // 텍스처 로딩 상태 추적
+  useEffect(() => {
+    if (onLoadingProgress) {
+      // 간단한 로딩 시뮬레이션 (실제로는 텍스처 로딩 상태를 추적해야 함)
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 20;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          setTexturesLoaded(true);
+          if (onLoadingComplete) onLoadingComplete();
+        }
+        if (onLoadingProgress) onLoadingProgress(progress);
+      }, 300);
+      
+      return () => clearInterval(interval);
+    }
+  }, [onLoadingProgress, onLoadingComplete]);
 
   // OrbitControls 기반 카메라 애니메이션
   const animateCamera = useCallback((to, duration = 1.5, onComplete) => {
@@ -505,6 +567,7 @@ export default function RoomScene() {
 
   // 버튼 클릭 시 현재 카메라 위치/target 저장 (클릭 직전에 저장!)
   const handleButtonClick = useCallback((position, wallType, buttonKey) => {
+    if (selectedButton) return; // 이미 팝업이 열려 있으면 무시
     // 버튼 클릭 직전 시점 저장
     setRestoreView({
       position: controlsRef.current.object.position.clone(),
@@ -519,7 +582,7 @@ export default function RoomScene() {
       1.5,
       () => setSelectedButton(buttonKey)
     );
-  }, [animateCamera]);
+  }, [animateCamera, selectedButton]);
 
   // 복귀 시 항상 restoreView로 animateCamera, 복귀 후 restoreView는 null로 초기화
   const handleRestore = useCallback(() => {
@@ -565,6 +628,11 @@ export default function RoomScene() {
       setOutlineReady(false);
     }
   }, [isHovered]);
+
+  // 텍스처가 로딩되지 않았으면 아무것도 렌더링하지 않음
+  // if (!texturesLoaded) {
+  //   return null;
+  // }
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
@@ -644,7 +712,6 @@ export default function RoomScene() {
         onClose={handleRestore}
         buttonType={selectedButton}
       />
-      <BGMControl />
     </div>
   );
 }
