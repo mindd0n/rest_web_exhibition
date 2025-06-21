@@ -692,21 +692,6 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
           target={INITIAL_CAMERA_LOOKAT}
         />
       </Canvas>
-      {selectedButton && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            zIndex: 2000,
-            background: 'rgba(0,0,0,0)',
-            cursor: 'pointer',
-          }}
-          onClick={handleRestore}
-        />
-      )}
       <Popup 
         isOpen={!!selectedButton} 
         onClose={handleRestore}
