@@ -117,15 +117,14 @@
 .pavilion-container {
     width: 100%;
     height: 100%;
-    background-size: 100% auto; /* 가로는 전체 채우고 세로는 비율 유지 */
+    background-size: 80vw auto; /* 2차 팝업창 크기에 맞춰 조정 */
     background-position: center;
     background-repeat: no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    min-height: 100vh; /* 최소 ?이 추? */
-    background-color: #f0f0f0; /* 배경??추? - ?지가 ??보일 ???인??*/
+    min-height: 100vh;
 }
 
 .poster-list {
