@@ -180,16 +180,17 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           onClick={handleContentClick}
           style={{
             position: 'relative',
-            width: '95vw',
-            maxWidth: '1800px',
-            maxHeight: '95vh',
-            aspectRatio: '10/9',
           }}
         >
           <img 
             src="/content/popup/popup_bg.png" 
             alt="Popup UI" 
-            style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'brightness(1.3)' }}
+            style={{ 
+              display: 'block',
+              maxWidth: '95vw',
+              maxHeight: '95vh',
+              filter: 'brightness(1.3)' 
+            }}
           />
           <div 
             style={{
@@ -234,8 +235,8 @@ const ContentDisplay = ({ buttonId, onClose }) => {
             alt="Back button"
             style={{
               position:'absolute', 
-              right:'18%',
-              bottom:'4%', 
+              right:'22%',
+              bottom:'8%',
               width:'120px',
               height:'auto', 
               cursor:'pointer',
