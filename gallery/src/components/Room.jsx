@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useCallback, Suspense } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -6,8 +6,18 @@ import { EffectComposer, Outline } from '@react-three/postprocessing';
 import './styles.css';
 import { useTexture } from '@react-three/drei';
 import { useButtonImageData } from '../hooks/useButtonImageData';
-import Popup from './Popup';
+import ContentDisplay from './ContentDisplay.jsx';
 import gsap from 'gsap';
+
+// 버튼 위치 계산 함수 (예시)
+function getButtonPosition(wallType, buttonKey, index, total) {
+  // 실제 위치 계산 로직을 여기에 넣으세요
+  // 아래는 예시입니다.
+  const baseY = 0;
+  const baseZ = 0.1;
+  const gap = 20;
+  return [index * gap - (total - 1) * gap / 2, baseY, baseZ];
+}
 
 // Room dimensions
 const roomHeight = 150;
@@ -24,6 +34,7 @@ const wallLightIntensity = 1.2;
 const wallLightColor = "#fff0e6";
 
 const minDistance = 0.5;
+const maxDistance = Math.max(roomWidth, roomHeight, roomDepth) / 2; // 큐브 밖으로 나가지 않도록 최대 거리 설정
 
 // 초기 카메라 상태를 상수로 정의
 const INITIAL_CAMERA_POSITION = new THREE.Vector3(0, viewerHeight, roomDepth / 2 - 1);
@@ -355,33 +366,64 @@ const Room = ({
   setSelectedButton,
   animateCamera
 }) => {
-      // 텍스처를 메모이제이션
-      const wallTextures = useMemo(() => ({
-    front: loadTexture('/images/walls/wall_photo.png', null),
-    right: loadTexture('/images/walls/wall_home.png', null),
-    back: loadTexture('/images/walls/wall_walk.png', null),
-    left: loadTexture('/images/walls/wall_bus-stop.png', null),
-    floor: loadTexture('/images/walls/wall_floor.png', null),
-    ceiling: loadTexture('/images/walls/wall_ceiling.png', null),
-      }), []);
+  const wallTextures = useTexture({
+    front: '/images/walls/wall_photo.png',
+    back: '/images/walls/wall_walk.png',
+    left: '/images/walls/wall_bus-stop.png',
+    right: '/images/walls/wall_home.png',
+    ceiling: '/images/walls/wall_ceiling.png',
+    floor: '/images/walls/wall_floor.png',
+  });
+  
+  // 모든 텍스처 로딩 후 콜백
+  useEffect(() => {
+    const manager = new THREE.LoadingManager();
+    manager.onLoad = () => {
+      console.log('모든 텍스처 로딩 완료');
+    };
+  }, []);
 
-      const glowTexture = useMemo(() => loadTexture('/images/btn_enter_hover.png', null), []);
-      
-      // Walkpath 버튼 텍스처
-      const walkpathTextures = useMemo(() => ({
-        sun: loadTexture('/images/buttons/btn_walkpath_sun.png', getUVTransform(buttonBBoxes.sun)),
-        path: loadTexture('/images/buttons/btn_walkpath_path.png', getUVTransform(buttonBBoxes.path)),
-        sign: loadTexture('/images/buttons/btn_walkpath_sign.png', getUVTransform(buttonBBoxes.sign)),
-        bridge: loadTexture('/images/buttons/btn_walkpath_bridge.png', getUVTransform(buttonBBoxes.bridge)),
-      }), []);
+  const buttons = useMemo(() => {
+    const wallButtonData = {
+      'front': [
+        { key: 'btn_p_go',       src: '/images/buttons/wall_photo_btn/btn_p_go.png',       hoverSrc: '/images/buttons/wall_photo_btn/btn_p_go_hover.png' },
+        { key: 'btn_p_tree',     src: '/images/buttons/wall_photo_btn/btn_p_tree.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_tree_hover.png' },
+        { key: 'btn_p_note',     src: '/images/buttons/wall_photo_btn/btn_p_note.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_note_hover.png' },
+        { key: 'btn_p_pavilion', src: '/images/buttons/wall_photo_btn/btn_p_pavilion.png', hoverSrc: '/images/buttons/wall_photo_btn/btn_p_pavilion_hover.png' }
+      ],
+      'back': [
+        { key: 'btn_w_bridge', src: '/images/buttons/wall_walk_btn/btn_w_bridge.png', hoverSrc: '/images/buttons/wall_walk_btn/btn_w_bridge_hover.png' },
+        { key: 'btn_w_sign',   src: '/images/buttons/wall_walk_btn/btn_w_sign.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sign_hover.png' },
+        { key: 'btn_w_sun',    src: '/images/buttons/wall_walk_btn/btn_w_sun.png',    hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sun_hover.png' },
+        { key: 'btn_w_walk',   src: '/images/buttons/wall_walk_btn/btn_w_walk.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_walk_hover.png' },
+      ],
+      'left': [
+        { key: 'btn_b_bus',     src: '/images/buttons/wall_bus-stop_btn/btn_b_bus.png',     hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_bus_hover.png' },
+        { key: 'btn_b_busstop', src: '/images/buttons/wall_bus-stop_btn/btn_b_busstop.png', hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_busstop_hover.png' },
+        { key: 'btn_b_home',    src: '/images/buttons/wall_bus-stop_btn/btn_b_home.png',    hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_home_hover.png' },
+      ],
+      'right': [
+        { key: 'btn_h_dog',    src: '/images/buttons/wall_home_btn/btn_h_dog.png',    hoverSrc: '/images/buttons/wall_home_btn/btn_h_dog_hover.png' },
+        { key: 'btn_h_home',   src: '/images/buttons/wall_home_btn/btn_h_home.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_home_hover.png' },
+        { key: 'btn_h_ribbon', src: '/images/buttons/wall_home_btn/btn_h_ribbon.png', hoverSrc: '/images/buttons/wall_home_btn/btn_h_ribbon_hover.png' },
+        { key: 'btn_h_star',   src: '/images/buttons/wall_home_btn/btn_h_star.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_star_hover.png' },
+      ],
+      'ceiling': [
+        { key: 'btn_c_heart', src: '/images/buttons/wall_ceiling_btn/btn_c_heart.png', hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_heart_hover.png' },
+        { key: 'btn_c_lamp', src: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png', hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png' },
+      ],
+      'floor': [
+        { key: 'btn_f_phone', src: '/images/buttons/wall_floor_btn/btn_f_phone.png', hoverSrc: '/images/buttons/wall_floor_btn/btn_f_phone_hover.png' },
+        { key: 'btn_f_rug',   src: '/images/buttons/wall_floor_btn/btn_f_rug.png',   hoverSrc: '/images/buttons/wall_floor_btn/btn_f_rug_hover.png' },
+      ],
+    };
 
-  // 버튼 텍스처 미리 useMemo로 준비
-  const wallButtonTextures = useMemo(() => {
-    const obj = {};
-    Object.keys(wallButtonData).forEach(wall => {
-      obj[wall] = wallButtonData[wall].map(btn => loadTexture(btn.src));
-    });
-    return obj;
+    return Object.entries(wallButtonData).flatMap(([wallType, wallButtons]) => 
+      wallButtons.map((btn, index) => {
+        const position = getButtonPosition(wallType, btn.key, index, wallButtons.length);
+        return { ...btn, wallType, position, btnIdx: index, btnTotal: wallButtons.length };
+      })
+    );
   }, []);
 
       return (
@@ -395,7 +437,7 @@ const Room = ({
       <directionalLight position={[0, -100, 0]} intensity={0.2} />
       <directionalLight position={[0, 100, 0]} intensity={2.0} />
           {/* 벽과 기본 구조 */}
-          <group>
+          <group ref={buttonRef}>
             {/* 바닥 */}
             <group position={[0, -roomHeight / 2, 0]}>
               <mesh rotation={[-Math.PI / 2, 0, 0]}>
@@ -636,40 +678,40 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
-      <Canvas
+      <div
         style={{
-          width: "100vw",
-          height: "100vh",
-          cursor: cursor,
+          width: '100%',
+          height: '100%',
+          cursor: isHovered ? `url('/images/cursor-click.png') 16 44, auto` : `url('/images/cursor.png') 16 44, auto`,
+          position: 'relative',
+          zIndex: 1,
+          pointerEvents: selectedButton ? 'none' : 'auto',
         }}
-        onPointerUp={(e) => {
-          if (e.button === 0) {
-            setCursor(`url(/images/cursor.png) 16 44, auto`);
-          }
-        }}
-        onPointerLeave={() => setCursor(`url(/images/cursor.png) 16 44, auto`)}
-        camera={{ 
-          position: [0, viewerHeight, minDistance],
-          fov: 75,
-          near: 0.1,
-          far: 2000
-        }}
-        gl={{ 
-          outputColorSpace: THREE.SRGBColorSpace,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2,
-          toneMappingGamma: 0.9,
-          powerPreference: "high-performance",
-          antialias: true,
-          stencil: false,
-          depth: true,
-          alpha: true,
-          premultipliedAlpha: false
-        }}
-        shadows={false}
-        dpr={[1, 1.5]}
-        frameloop="demand"
       >
+        <Canvas
+          gl={{
+            antialias: true,
+            powerPreference: 'high-performance'
+          }}
+        camera={{ 
+            position: INITIAL_CAMERA_POSITION,
+            fov: INITIAL_CAMERA_FOV,
+          }}
+          onCreated={({ camera }) => {
+            camera.lookAt(INITIAL_CAMERA_LOOKAT);
+            camera.layers.enable(1);
+          }}
+        >
+          <OrbitControls
+            ref={controlsRef}
+            enableZoom={!isAnimating}
+            enablePan={!isAnimating}
+            enableRotate={!isAnimating}
+            minDistance={minDistance}
+            maxDistance={maxDistance}
+            target={INITIAL_CAMERA_LOOKAT}
+          />
+          <Suspense fallback={null}>
         <Room
           isHovered={isHovered}
           setIsHovered={setIsHovered}
@@ -679,24 +721,25 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
           setSelectedButton={setSelectedButton}
           animateCamera={animateCamera}
         />
-        <OrbitControls
-          ref={controlsRef}
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={!isAnimating}
-          makeDefault
-          minDistance={minDistance}
-          maxDistance={roomDepth / 2 - 1}
-          minPolarAngle={Math.PI * 0.15}
-          maxPolarAngle={Math.PI * 0.85}
-          target={INITIAL_CAMERA_LOOKAT}
-        />
+          </Suspense>
+          <EffectComposer>
+            <Outline
+              selection={hoveredObject && buttonRef.current ? [buttonRef.current.getObjectByName(hoveredObject)].filter(Boolean) : []}
+              edgeStrength={100}
+              visibleEdgeColor={0x00ff00}
+              hiddenEdgeColor={0x00ff00}
+              blur
+            />
+          </EffectComposer>
       </Canvas>
-      <Popup 
-        isOpen={!!selectedButton} 
-        onClose={handleRestore}
-        buttonType={selectedButton}
-      />
+      </div>
+
+      {selectedButton && (
+        <ContentDisplay 
+          buttonId={selectedButton}
+          onClose={handleRestore}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,115 @@
+.movie-app-container {
+  width: 100%;
+  height: 100%;
+  /* 동적 배경 이미지 적용 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 20px; /* 팝업 배경과 어울리도록 */
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Pretendard', sans-serif;
+  overflow: hidden;
+  color: white;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 1단계: 목록 */
+.movie-list {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* 콘텐츠를 수직/수평 중앙에 배치 */
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.movie-list-title {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  flex-shrink: 0;
+}
+
+.poster-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5개 아이템으로 꽉 채우기 */
+  gap: 30px; /* 아이템 간 간격 */
+  width: 100%;
+  max-width: 1200px; /* 전체적인 최대 너비 제한 */
+}
+
+.movie-poster-item {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 100%; /* 그리드 셀 너비에 맞춤 */
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.movie-poster-item:hover {
+  transform: scale(1.05);
+}
+
+.movie-poster-item img {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+}
+
+.movie-info h3 {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-info p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+}
+
+/* 2단계: 상세 정보 오버레이 */
+.movie-detail-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  /* 이미지를 배경으로 설정하여 꽉 채움 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 이 클래스는 더 이상 사용되지 않음 */
+.movie-detail-image {
+  display: none;
+}
+
+/* 더 이상 필요 없는 스타일 제거 */
+.movie-detail, .back-button, .detail-content, .poster-section, .description-section {
+  /* 이 클래스들은 JSX에서 제거되었으므로, 관련 스타일도 제거합니다. */
+}
+
+@media (max-width: 768px) {
+  .detail-content {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+} 
