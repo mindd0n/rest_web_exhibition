@@ -6,18 +6,22 @@ function App() {
 
   return (
     <>
-      <img
-        src="/icons/hoya-icon.png"
-        alt="호야 아이콘"
+      <button
         onClick={() => setShowStory(true)}
         style={{
           position: 'absolute',
           top: '60%',
           left: '30%',
-          width: '80px',
+          padding: '10px 20px',
+          backgroundColor: '#fff',
+          border: 'none',
+          borderRadius: '5px',
           cursor: 'pointer',
+          fontSize: '16px',
         }}
-      />
+      >
+        호야 스토리 보기
+      </button>
       {showStory && <HoyaStoryModal onClose={() => setShowStory(false)} />}
     </>
   );

@@ -59,7 +59,6 @@ const VideoPopup = ({ videoSrc, onClose }) => {
             objectFit: 'contain',
           }}
           controls
-          autoPlay
           loop
           playsInline
         />
@@ -71,20 +70,20 @@ const VideoPopup = ({ videoSrc, onClose }) => {
 const ContentMap = {
   // Pavilion
   'btn_p_pavilion': { type: 'custom' },
-  'btn_p_note': { type: 'iframe', src: 'http://localhost:3000/content/btn_p_note/F.cocoon-diary/dist/index.html' },
+  'btn_p_note': { type: 'iframe', src: '/content/btn_p_note/F.cocoon-diary/dist/index.html' },
   'btn_p_tree': { type: 'custom' },
   'btn_p_go': { type: 'custom' },
 
   // Home
-  'btn_h_dog': { type: 'iframe', src: '/content/btn_h_dog/S.hoya-story/build/index.html' },
+  'btn_h_dog': { type: 'iframe', src: '/content/btn_h_dog/S.hoya-story/dist/index.html' },
   'btn_h_star': { type: 'iframe', src: '/content/btn_h_star/T.cocooon-scroll-gallery/build/index.html' },
-  'btn_h_ribbon': { type: 'video', src: '/content/videos/R.mp4' },
+  'btn_h_ribbon': { type: 'video', src: '/content/btn_h_ribbon/R.mp4' },
   'btn_h_home': { type: 'iframe', src: '/content/btn_h_home/j/build/index.html' },
 
   // Bus-stop
   'btn_b_bus': { type: 'video', src: '/content/btn_b_bus/i.mp4' },
   'btn_b_busstop': { type: 'video', src: '/content/btn_b_busstop/H.mp4' },
-  'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/build/index.html' },
+  'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/index.html' },
   
   // Ceiling
   'btn_c_heart': { type: 'image', src: '/content/btn_c_heart/U.PNG' },
@@ -147,7 +146,7 @@ const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
             height: '100%',
             objectFit: 'contain' 
           }} 
-          controls autoPlay loop playsInline 
+          controls loop playsInline 
         />
       );
     case 'iframe':
@@ -218,6 +217,12 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           onClick={handleContentClick}
           style={{
             position: 'relative',
+            width: buttonId === 'btn_p_note' ? '90vw' : 'auto',
+            height: buttonId === 'btn_p_note' ? '80vh' : 'auto',
+            maxWidth: buttonId === 'btn_p_note' ? '1200px' : '98vw',
+            maxHeight: buttonId === 'btn_p_note' ? '800px' : '98vh',
+            backgroundColor: buttonId === 'btn_p_note' ? '#000' : 'transparent',
+            borderRadius: buttonId === 'btn_p_note' ? '8px' : '0',
           }}
         >
           {buttonId !== 'btn_p_note' && (

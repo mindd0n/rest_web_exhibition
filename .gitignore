@@ -3,3 +3,11 @@ node_modules
 # Large video files for deployment (not for GitHub)
 deploy_videos/
 gallery/public/deploy_videos/
+
+# Large media files (use Firebase Storage instead)
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.avi
+*.AVI

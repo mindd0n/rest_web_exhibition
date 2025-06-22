@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const hoyaStories = [
-  { type: 'video', src: '/stories/1.MOV' },
-  { type: 'video', src: '/stories/2.MOV' },
-  { type: 'image', src: '/stories/3.jpg' },
-  { type: 'video', src: '/stories/4.MOV' },
-  { type: 'image', src: '/stories/5.jpg' },
-  { type: 'video', src: '/stories/6.MOV' },
-  { type: 'video', src: '/stories/7.MOV' },
+  { type: 'video', src: './stories/1.MOV' },
+  { type: 'video', src: './stories/2.MOV' },
+  { type: 'image', src: './stories/3.jpg' },
+  { type: 'video', src: './stories/4.MOV' },
+  { type: 'image', src: './stories/5.jpg' },
+  { type: 'video', src: './stories/6.MOV' },
+  { type: 'video', src: './stories/7.MOV' },
 ];
 
 export default function HoyaStoryModal({ onClose }) {
