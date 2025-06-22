@@ -5,6 +5,7 @@ const HomeContent = () => {
   const [selectedContent, setSelectedContent] = useState(null);
 
   const handleIconClick = (contentType) => {
+    console.log('Icon clicked:', contentType); // 디버깅용
     setSelectedContent(contentType);
   };
 
@@ -64,90 +65,54 @@ const HomeContent = () => {
         className="home-bg-image"
       />
       
-      {/* 투명 버튼들 */}
-      <button 
-        className="icon-button icon-o"
-        onClick={() => handleIconClick('icon_o')}
-        style={{
-          position: 'absolute',
-          top: '15%',
-          left: '0%',
-          width: '75%',
-          height: '75%',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          zIndex: 2,
-          pointerEvents: 'none'
-        }}
-      >
+      {/* 아이콘 버튼들 - 색이 있는 부분만 클릭 가능 */}
+      <div className="icon-button icon-o" style={{ pointerEvents: 'none' }}>
         <img 
           src="/content/btn_h_home/icon_o.png" 
           alt="Icon O" 
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'contain',
-            pointerEvents: 'auto'
+          className="icon-image"
+          onClick={() => handleIconClick('icon_o')}
+          style={{
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain'
           }}
         />
-      </button>
+      </div>
 
-      <button 
-        className="icon-button icon-p"
-        onClick={() => handleIconClick('icon_p')}
-        style={{
-          position: 'absolute',
-          top: '15%',
-          left: '10%',
-          width: '75%',
-          height: '75%',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          zIndex: 2,
-          pointerEvents: 'none'
-        }}
-      >
+      <div className="icon-button icon-p" style={{ pointerEvents: 'none' }}>
         <img 
           src="/content/btn_h_home/icon_p.png" 
           alt="Icon P" 
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'contain',
-            pointerEvents: 'auto'
+          className="icon-image"
+          onClick={() => handleIconClick('icon_p')}
+          style={{
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain'
           }}
         />
-      </button>
+      </div>
 
-      <button 
-        className="icon-button icon-q"
-        onClick={() => handleIconClick('icon_q')}
-        style={{
-          position: 'absolute',
-          top: '15%',
-          left: '20%',
-          width: '75%',
-          height: '75%',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          zIndex: 2,
-          pointerEvents: 'none'
-        }}
-      >
+      <div className="icon-button icon-q" style={{ pointerEvents: 'none' }}>
         <img 
           src="/content/btn_h_home/icon_q.png" 
           alt="Icon Q" 
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'contain',
-            pointerEvents: 'auto'
+          className="icon-image"
+          onClick={() => handleIconClick('icon_q')}
+          style={{
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain'
           }}
         />
-      </button>
+      </div>
 
       {/* 2차 팝업창 */}
       {selectedContent && (
