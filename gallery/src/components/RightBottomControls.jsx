@@ -4,6 +4,7 @@ const RightBottomControls = () => {
     const [isMusicOn, setIsMusicOn] = useState(true);
     const [showMap, setShowMap] = useState(false);
     const audioRef = useRef(null);
+    const outButtonRef = useRef(null);
 
     // 배경음악 초기화 (임시 비활성화 - way back home.mp3 파일이 없음)
     useEffect(() => {
@@ -73,6 +74,7 @@ const RightBottomControls = () => {
         marginBottom: '0px',
         position: 'relative',
         top: '100px',
+        pointerEvents: 'none',
     };
 
     const containerStyle = {
@@ -112,27 +114,28 @@ const RightBottomControls = () => {
             <div style={containerStyle}>
                 {/* 3. Out 버튼 */}
                 <button
+                    ref={outButtonRef}
                     style={outButtonStyle}
-                    onMouseEnter={(e) => {
-                        e.target.style.transform = 'scale(1.1)';
-                        const img = e.target.querySelector('img') || e.target;
-                        if (img && img.tagName === 'IMG') {
-                            img.src = '/images/buttons/icon_out_hover.png';
-                        }
-                    }}
-                    onMouseLeave={(e) => {
-                        e.target.style.transform = 'scale(1)';
-                        const img = e.target.querySelector('img') || e.target;
-                        if (img && img.tagName === 'IMG') {
-                            img.src = '/images/buttons/icon_out.png';
-                        }
-                    }}
-                    onClick={handleExit}
                 >
                     <img
                         src="/images/buttons/icon_out.png"
                         alt="Exit"
-                        style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '0px' }}
+                        style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            objectFit: 'contain', 
+                            padding: '0px',
+                            pointerEvents: 'auto',
+                        }}
+                        onClick={handleExit}
+                        onMouseEnter={(e) => {
+                            if (outButtonRef.current) outButtonRef.current.style.transform = 'scale(1.1)';
+                            e.currentTarget.src = '/images/buttons/icon_out_hover.png';
+                        }}
+                        onMouseLeave={(e) => {
+                            if (outButtonRef.current) outButtonRef.current.style.transform = 'scale(1)';
+                            e.currentTarget.src = '/images/buttons/icon_out.png';
+                        }}
                     />
                 </button>
 

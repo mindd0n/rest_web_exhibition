@@ -110,7 +110,7 @@ const GenericContent = ({ type, src, onClose }) => {
   switch (type) {
     case 'video':
       return (
-        <video src={src} style={contentStyle} controls autoPlay loop playsInline />
+        <video src={src} style={{ width: '100%', height: '100%', objectFit: 'contain' }} controls autoPlay loop playsInline />
       );
     case 'iframe':
       return (
@@ -187,8 +187,8 @@ const ContentDisplay = ({ buttonId, onClose }) => {
             alt="Popup UI" 
             style={{ 
               display: 'block',
-              maxWidth: '95vw',
-              maxHeight: '95vh',
+              maxWidth: '98vw',
+              maxHeight: '98vh',
               filter: 'brightness(1.3)' 
             }}
           />
@@ -207,14 +207,16 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           <div 
             style={{
               position: 'absolute',
-              top: '1%',
-              left: '1%',
-              width: '98%',
-              height: '98%',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              boxSizing: 'border-box',
+              padding: '8% 10%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 2,
+              zIndex: 3,
             }}
           >
             {buttonId === 'btn_p_go' ? (
@@ -235,12 +237,12 @@ const ContentDisplay = ({ buttonId, onClose }) => {
             alt="Back button"
             style={{
               position:'absolute', 
-              right:'22%',
+              right:'1%',
               bottom:'8%',
-              width:'120px',
+              width:'100px',
               height:'auto', 
               cursor:'pointer',
-              zIndex: 3,
+              zIndex: 2,
             }}
             onClick={handleClose}
           />
