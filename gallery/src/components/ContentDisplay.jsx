@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import InteractiveGoButton from './InteractiveGoButton.jsx';
+import PavilionContent from './content/PavilionContent.jsx';
 
 // 비디오 팝업 컴포넌트
 const VideoPopup = ({ videoSrc, onClose }) => {
@@ -69,39 +70,68 @@ const VideoPopup = ({ videoSrc, onClose }) => {
 
 const ContentMap = {
   // Pavilion
-  'btn_p_pavilion': { type: 'iframe', src: '/content/btn_p_pavilion/G.영화추천리스트/index.html' },
-  'btn_p_note': { type: 'iframe', src: '/content/btn_p_note/F.cocoon-diary/dist/index.html' },
-  'btn_p_tree': { type: 'image', src: '/content/btn_p_tree/E.JPG' },
+  'btn_p_pavilion': { type: 'custom' },
+  'btn_p_note': { type: 'iframe', src: '/content/btn_p_note/F.cocoon-diary/build/index.html' },
+  'btn_p_tree': { type: 'custom' },
   'btn_p_go': { type: 'custom' },
 
   // Home
-  'btn_h_dog': { type: 'iframe', src: '/content/btn_h_dog/S.hoya-story/dist/index.html' },
-  'btn_h_star': { type: 'iframe', src: '/content/btn_h_star/T.cocooon-scroll-gallery/dist/index.html' },
-  'btn_h_ribbon': { type: 'video', src: '/deploy_videos/R.mp4' },
-  'btn_h_home': { type: 'iframe', src: '/content/btn_h_home/j/index.html' },
+  'btn_h_dog': { type: 'iframe', src: '/content/btn_h_dog/S.hoya-story/build/index.html' },
+  'btn_h_star': { type: 'iframe', src: '/content/btn_h_star/T.cocooon-scroll-gallery/build/index.html' },
+  'btn_h_ribbon': { type: 'video', src: '/content/videos/R.mp4' },
+  'btn_h_home': { type: 'iframe', src: '/content/btn_h_home/j/build/index.html' },
 
   // Bus-stop
-  'btn_b_bus': { type: 'video', src: '/deploy_videos/i.mp4' },
-  'btn_b_busstop': { type: 'video', src: '/deploy_videos/H.mp4' },
-  'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/index.html' },
+  'btn_b_bus': { type: 'video', src: '/content/videos/i.mp4' },
+  'btn_b_busstop': { type: 'video', src: '/content/videos/H.mp4' },
+  'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/build/index.html' },
   
   // Ceiling
   'btn_c_heart': { type: 'image', src: '/content/btn_c_heart/U.PNG' },
-  'btn_c_lamp': { type: 'video', src: '/deploy_videos/O.mp4' },
+  'btn_c_lamp': { type: 'video', src: '/content/videos/O.mp4' },
   
   // Floor
-  'btn_f_rug': { type: 'iframe', src: '/content/btn_f_rug/참여형 페이지/index.html' },
-  'btn_f_phone': { type: 'iframe', src: '/content/btn_f_phone/V.디지털디톡스/index.html' },
+  'btn_f_rug': { type: 'iframe', src: '/content/btn_f_rug/참여형 페이지/build/index.html' },
+  'btn_f_phone': { type: 'iframe', src: '/content/btn_f_phone/V.디지털디톡스/build/index.html' },
 
   // Walk
-  'btn_w_walk': { type: 'video', src: '/deploy_videos/L.mp4' },
-  'btn_w_bridge': { type: 'video', src: '/deploy_videos/M.mp4' },
-  'btn_w_sign': { type: 'video', src: '/deploy_videos/N.mp4' },
-  'btn_w_sun': { type: 'video', src: '/deploy_videos/P.mp4' },
+  'btn_w_walk': { type: 'video', src: '/content/videos/L.mp4' },
+  'btn_w_bridge': { type: 'video', src: '/content/videos/M.mp4' },
+  'btn_w_sign': { type: 'video', src: '/content/videos/N.mp4' },
+  'btn_w_sun': { type: 'video', src: '/content/videos/P.mp4' },
 };
 
-const GenericContent = ({ type, src, onClose }) => {
-  const contentStyle = {
+const TreeContent = () => {
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '0px' }}>
+      <div style={{ flex: 2, minHeight: 0 }}>
+        <GenericContent 
+          type='video' 
+          src='/content/btn_p_tree/C.mp4' 
+        />
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'row', gap: '1px', minHeight: 0 }}>
+        <div style={{ flex: 2, minHeight: 0 }}>
+          <GenericContent 
+            type='image'
+            src='/content/btn_p_tree/D.jpg'
+            objectFit='cover'
+          />
+        </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <GenericContent 
+            type='image'
+            src='/content/btn_p_tree/E.JPG'
+            objectFit='cover'
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
+  const baseStyle = {
     width: '100%',
     height: '100%',
     border: 'none',
@@ -110,15 +140,23 @@ const GenericContent = ({ type, src, onClose }) => {
   switch (type) {
     case 'video':
       return (
-        <video src={src} style={{ width: '100%', height: '100%', objectFit: 'contain' }} controls autoPlay loop playsInline />
+        <video 
+          src={src} 
+          style={{ 
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain' 
+          }} 
+          controls autoPlay loop playsInline 
+        />
       );
     case 'iframe':
       return (
-        <iframe src={src} style={contentStyle} title="content" />
+        <iframe src={src} style={baseStyle} title="content" />
       );
     case 'image':
       return (
-        <img src={src} style={{ ...contentStyle, objectFit: 'contain' }} alt="content" />
+        <img src={src} style={{ ...baseStyle, objectFit: objectFit }} alt="content" />
       );
     default:
       return <div>Unsupported content type</div>;
@@ -219,18 +257,26 @@ const ContentDisplay = ({ buttonId, onClose }) => {
               zIndex: 3,
             }}
           >
-            {buttonId === 'btn_p_go' ? (
-              <Canvas style={{ width: '100%', height: '100%', background: 'transparent' }} camera={{ position: [0, 0, 15], fov: 50 }}>
-                <ambientLight intensity={1.2} />
-                <InteractiveGoButton 
-                  position={[0, 0, 0]} 
-                  onVideoAOpen={() => setShowVideoA(true)}
-                  onVideoBOpen={() => setShowVideoB(true)}
-                />
-              </Canvas>
-            ) : (
-              <GenericContent type={contentInfo.type} src={contentInfo.src} onClose={onClose} />
-            )}
+            {(() => {
+              if (buttonId === 'btn_p_go') {
+                return (
+                  <Canvas style={{ width: '100%', height: '100%', background: 'transparent' }} camera={{ position: [0, 0, 15], fov: 50 }}>
+                    <ambientLight intensity={1.2} />
+                    <InteractiveGoButton 
+                      position={[0, 0, 0]} 
+                      onVideoAOpen={() => setShowVideoA(true)}
+                      onVideoBOpen={() => setShowVideoB(true)}
+                    />
+                  </Canvas>
+                );
+              } else if (buttonId === 'btn_p_pavilion') {
+                return <PavilionContent />;
+              } else if (buttonId === 'btn_p_tree') {
+                return <TreeContent />;
+              } else {
+                return <GenericContent type={contentInfo.type} src={contentInfo.src} onClose={onClose} />;
+              }
+            })()}
           </div>
           <img 
             src="/content/popup/btn_back.png" 

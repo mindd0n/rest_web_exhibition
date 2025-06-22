@@ -1,11 +1,11 @@
 .movie-app-container {
   width: 100%;
   height: 100%;
-  /* 동적 배경 이미지 적용 */
-  background-size: cover;
+  /* ?�적 배경 ?��?지 ?�용 */
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 20px; /* 팝업 배경과 어울리도록 */
+  border-radius: 20px; /* ?�업 배경�??�울리도�?*/
   
   display: flex;
   justify-content: center;
@@ -17,14 +17,14 @@
   box-sizing: border-box;
 }
 
-/* 1단계: 목록 */
+/* 1?�계: 목록 */
 .movie-list {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* 콘텐츠를 수직/수평 중앙에 배치 */
+  justify-content: center; /* 콘텐츠�? ?�직/?�평 중앙??배치 */
   padding: 40px;
   box-sizing: border-box;
 }
@@ -38,17 +38,17 @@
 
 .poster-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5개 아이템으로 꽉 채우기 */
-  gap: 30px; /* 아이템 간 간격 */
+  grid-template-columns: repeat(5, 1fr); /* 5�??�이?�으�?�?채우�?*/
+  gap: 30px; /* ?�이??�?간격 */
   width: 100%;
-  max-width: 1200px; /* 전체적인 최대 너비 제한 */
+  max-width: 1200px; /* ?�체?�인 최�? ?�비 ?�한 */
 }
 
 .movie-poster-item {
   background: none;
   border: none;
   padding: 0;
-  width: 100%; /* 그리드 셀 너비에 맞춤 */
+  width: 100%; /* 그리???� ?�비??맞춤 */
   text-align: center;
   cursor: pointer;
   transition: transform 0.3s ease;
@@ -77,7 +77,7 @@
   font-size: 0.85rem;
 }
 
-/* 2단계: 상세 정보 오버레이 */
+/* 2?�계: ?�세 ?�보 ?�버?�이 */
 .movie-detail-overlay {
   position: absolute;
   top: 0;
@@ -91,20 +91,20 @@
   backdrop-filter: blur(8px);
   background-color: rgba(0, 0, 0, 0.6);
   cursor: pointer;
-  /* 이미지를 배경으로 설정하여 꽉 채움 */
-  background-size: cover;
+  /* ?��?지�?배경?�로 ?�정?�여 �?채�? */
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
 }
 
-/* 이 클래스는 더 이상 사용되지 않음 */
+/* ???�래?�는 ???�상 ?�용?��? ?�음 */
 .movie-detail-image {
   display: none;
 }
 
-/* 더 이상 필요 없는 스타일 제거 */
+/* ???�상 ?�요 ?�는 ?��????�거 */
 .movie-detail, .back-button, .detail-content, .poster-section, .description-section {
-  /* 이 클래스들은 JSX에서 제거되었으므로, 관련 스타일도 제거합니다. */
+  /* ???�래?�들?� JSX?�서 ?�거?�었?��?�? 관???��??�도 ?�거?�니?? */
 }
 
 @media (max-width: 768px) {
@@ -112,4 +112,108 @@
     flex-direction: column;
     overflow-y: auto;
   }
+}
+
+.pavilion-container {
+    width: 100%;
+    height: 100%;
+    background-size: contain; /* 100% auto -> cover�?변�?*/
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 100vh; /* 최소 ?�이 추�? */
+    background-color: #f0f0f0; /* 배경??추�? - ?��?지가 ??보일 ???�인??*/
+}
+
+.poster-list {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    padding-bottom: 5%;
+}
+
+.poster-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 10px;
+}
+
+.poster-button:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.poster-button img {
+    display: block;
+    width: 180px;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* --- ?�세 ?�업 (구조 변�? --- */
+.detail-popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* 반투�?배경 ?��? */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.detail-popup-content {
+    position: relative;
+    /* 배경 관???��????�거 -> ?�식 img가 ?�기 결정 */
+}
+
+.detail-bg-image { /* ?�로 추�?: 2�??�업 배경 ?��?지 */
+    display: block;
+    max-width: 80vw;
+    max-height: 80vh;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+}
+
+.detail-image-wrapper { /* ?�로 추�?: ?�명 ?��?지 컨테?�너 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 5%; /* 배경 ?��?지 ?�쪽?�로 ?�백 */
+}
+
+.detail-image { /* ?�명 ?��?지 */
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.close-detail-button {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    background: #fff;
+    color: #333;
+    border: 2px solid #333;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 11;
 } 
