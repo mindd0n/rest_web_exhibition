@@ -11,3 +11,7 @@ gallery/public/deploy_videos/
 *.MOV
 *.avi
 *.AVI
+
+# Security files
+serviceAccountKey.json
+*.json.key
