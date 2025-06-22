@@ -1,32 +1,11 @@
-import React, { Suspense } from 'react';
-import styled from 'styled-components';
+import React, { useEffect, useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import InteractiveGoButton from './InteractiveGoButton.jsx';
 
-const PavilionContent = React.lazy(() => import('./content/PavilionContent'));
-// 다른 콘텐츠 컴포넌트들도 여기에 추가
-// const StarContent = React.lazy(() => import('./content/StarContent'));
-
-const ContentMap = {
-  'btn_p_pavilion': PavilionContent,
-  // 'btn_h_star': StarContent,
-};
-
-const LoadingWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  color: white;
-  font-size: 1.5rem;
-`;
-
-const ContentDisplay = ({ buttonId, onClose }) => {
-  if (!buttonId) return null;
-
-  const ContentComponent = ContentMap[buttonId];
-
+// 비디오 팝업 컴포넌트
+const VideoPopup = ({ videoSrc, onClose }) => {
   return (
-    <div 
+    <div
       style={{
         position: 'fixed',
         top: 0,
@@ -37,63 +16,239 @@ const ContentDisplay = ({ buttonId, onClose }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1000,
-        cursor: 'pointer',
-      }} 
+        zIndex: 2000,
+      }}
       onClick={onClose}
     >
-      <div 
+      <div
         style={{
-          backgroundImage: 'url(/assets/content/popup/popup_bg.png)',
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          width: '95%',
-          height: '95%',
           position: 'relative',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          cursor: 'default',
-        }} 
-        onClick={e => e.stopPropagation()}
+          width: '80vw',
+          height: '80vh',
+          maxWidth: '1200px',
+          maxHeight: '800px',
+        }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onClose} style={{
-          position: 'absolute',
-          top: '8%',
-          left: '18%',
-          background: 'rgba(0,0,0,0.4)',
-          color: 'white',
-          border: '1px solid rgba(255, 255, 255, 0.7)',
-          borderRadius: '50%',
-          width: '44px',
-          height: '44px',
-          fontSize: '22px',
-          lineHeight: '44px',
-          textAlign: 'center',
-          cursor: 'pointer',
-          zIndex: 210,
-        }}>
-          &times;
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '-15px',
+            right: '-15px',
+            background: 'white',
+            color: 'black',
+            border: '2px solid #333',
+            borderRadius: '50%',
+            width: '35px',
+            height: '35px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            zIndex: 2001,
+          }}
+        >
+          X
         </button>
-
-        <div style={{
-          width: '80%',
-          height: '80%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginTop: '5%',
-          zIndex: 2,
-          position: 'relative',
-        }}>
-          <Suspense fallback={<LoadingWrapper>Loading...</LoadingWrapper>}>
-            {ContentComponent ? <ContentComponent /> : <LoadingWrapper>콘텐츠를 찾을 수 없습니다.</LoadingWrapper>}
-          </Suspense>
-        </div>
+        <video
+          src={videoSrc}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+          }}
+          controls
+          autoPlay
+          loop
+          playsInline
+        />
       </div>
     </div>
   );
 };
 
-export default ContentDisplay; 
+const ContentMap = {
+  // Pavilion
+  'btn_p_pavilion': { type: 'iframe', src: '/content/btn_p_pavilion/G.영화추천리스트/index.html' },
+  'btn_p_note': { type: 'iframe', src: '/content/btn_p_note/F.cocoon-diary/dist/index.html' },
+  'btn_p_tree': { type: 'image', src: '/content/btn_p_tree/E.JPG' },
+  'btn_p_go': { type: 'custom' },
+
+  // Home
+  'btn_h_dog': { type: 'iframe', src: '/content/btn_h_dog/S.hoya-story/dist/index.html' },
+  'btn_h_star': { type: 'iframe', src: '/content/btn_h_star/T.cocooon-scroll-gallery/dist/index.html' },
+  'btn_h_ribbon': { type: 'video', src: '/deploy_videos/R.mp4' },
+  'btn_h_home': { type: 'iframe', src: '/content/btn_h_home/j/index.html' },
+
+  // Bus-stop
+  'btn_b_bus': { type: 'video', src: '/deploy_videos/i.mp4' },
+  'btn_b_busstop': { type: 'video', src: '/deploy_videos/H.mp4' },
+  'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/index.html' },
+  
+  // Ceiling
+  'btn_c_heart': { type: 'image', src: '/content/btn_c_heart/U.PNG' },
+  'btn_c_lamp': { type: 'video', src: '/deploy_videos/O.mp4' },
+  
+  // Floor
+  'btn_f_rug': { type: 'iframe', src: '/content/btn_f_rug/참여형 페이지/index.html' },
+  'btn_f_phone': { type: 'iframe', src: '/content/btn_f_phone/V.디지털디톡스/index.html' },
+
+  // Walk
+  'btn_w_walk': { type: 'video', src: '/deploy_videos/L.mp4' },
+  'btn_w_bridge': { type: 'video', src: '/deploy_videos/M.mp4' },
+  'btn_w_sign': { type: 'video', src: '/deploy_videos/N.mp4' },
+  'btn_w_sun': { type: 'video', src: '/deploy_videos/P.mp4' },
+};
+
+const GenericContent = ({ type, src, onClose }) => {
+  const contentStyle = {
+    width: '100%',
+    height: '100%',
+    border: 'none',
+  };
+
+  switch (type) {
+    case 'video':
+      return (
+        <video src={src} style={contentStyle} controls autoPlay loop playsInline />
+      );
+    case 'iframe':
+      return (
+        <iframe src={src} style={contentStyle} title="content" />
+      );
+    case 'image':
+      return (
+        <img src={src} style={{ ...contentStyle, objectFit: 'contain' }} alt="content" />
+      );
+    default:
+      return <div>Unsupported content type</div>;
+  }
+};
+
+const ContentDisplay = ({ buttonId, onClose }) => {
+  const [show, setShow] = useState(false);
+  const [showVideoA, setShowVideoA] = useState(false);
+  const [showVideoB, setShowVideoB] = useState(false);
+  const contentInfo = ContentMap[buttonId];
+
+  useEffect(() => {
+    if (buttonId && contentInfo) {
+      setShow(true);
+    } else {
+      setShow(false);
+    }
+  }, [buttonId, contentInfo]);
+
+  const handleClose = (e) => {
+    e.stopPropagation();
+    setShow(false);
+    onClose();
+  };
+  
+  const handleWrapperClick = (e) => {
+      e.stopPropagation();
+      handleClose(e);
+  };
+  
+  const handleContentClick = (e) => {
+      e.stopPropagation();
+  };
+
+  if (!show || !contentInfo) {
+    return null;
+  }
+
+  return (
+    <>
+      <div 
+        onClick={handleWrapperClick}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          cursor: 'default',
+        }}
+      >
+        <div
+          onClick={handleContentClick}
+          style={{
+            position: 'relative',
+            width: '85vw',
+            maxWidth: '1400px',
+            maxHeight: '85vh',
+            aspectRatio: '10/9',
+          }}
+        >
+          <img 
+            src="/content/popup/popup_bg.png" 
+            alt="Popup UI" 
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+          />
+          <div 
+            style={{
+              position: 'absolute',
+              top: '10%',
+              left: '10%',
+              width: '80%',
+              height: '80%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2,
+            }}
+          >
+            {buttonId === 'btn_p_go' ? (
+              <Canvas style={{ width: '100%', height: '100%', background: 'transparent' }} camera={{ position: [0, 0, 15], fov: 50 }}>
+                <ambientLight intensity={1.2} />
+                <InteractiveGoButton 
+                  position={[0, 0, 0]} 
+                  onVideoAOpen={() => setShowVideoA(true)}
+                  onVideoBOpen={() => setShowVideoB(true)}
+                />
+              </Canvas>
+            ) : (
+              <GenericContent type={contentInfo.type} src={contentInfo.src} onClose={onClose} />
+            )}
+          </div>
+          <img 
+            src="/content/popup/btn_back.png" 
+            alt="Back button"
+            style={{
+              position:'absolute', 
+              right:'24%', 
+              bottom:'8%', 
+              width:'100px', 
+              height:'auto', 
+              cursor:'pointer',
+              zIndex: 3,
+            }}
+            onClick={handleClose}
+          />
+        </div>
+      </div>
+      
+      {/* 비디오 팝업들 */}
+      {showVideoA && (
+        <VideoPopup
+          videoSrc="/deploy_videos/L.mp4"
+          onClose={() => setShowVideoA(false)}
+        />
+      )}
+      {showVideoB && (
+        <VideoPopup
+          videoSrc="/deploy_videos/M.mp4"
+          onClose={() => setShowVideoB(false)}
+        />
+      )}
+    </>
+  );
+};
+
+export default ContentDisplay;

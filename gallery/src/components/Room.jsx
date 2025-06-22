@@ -7,15 +7,23 @@ import './styles.css';
 import { useTexture } from '@react-three/drei';
 import { useButtonImageData } from '../hooks/useButtonImageData';
 import ContentDisplay from './ContentDisplay.jsx';
+import InteractiveGoButton from './InteractiveGoButton.jsx';
 import gsap from 'gsap';
 
 // 버튼 위치 계산 함수 (예시)
 function getButtonPosition(wallType, buttonKey, index, total) {
-  // 실제 위치 계산 로직을 여기에 넣으세요
-  // 아래는 예시입니다.
+  const gap = 20;
+  
+  // 천장과 바닥 버튼은 x축 기준으로 균등 분산
+  if (wallType === 'ceiling' || wallType === 'floor') {
+    const offset = (index - (total - 1) / 2) * gap;
+    const y = wallType === 'ceiling' ? roomHeight / 2 - 0.01 : -roomHeight / 2 + 0.01;
+    return [offset, y, 0];
+  }
+  
+  // 기존 벽면들은 현재 방식 유지
   const baseY = 0;
   const baseZ = 0.1;
-  const gap = 20;
   return [index * gap - (total - 1) * gap / 2, baseY, baseZ];
 }
 
@@ -273,19 +281,19 @@ const Button = React.memo(function Button({
 
   if (!ready) return null;
 
-  // 바닥/천장 버튼 중앙 분산 위치 보정
-  let renderPos = Array.isArray(position) ? position : [0, 0, z];
-  if ((wallType === 'ceiling' || wallType === 'floor') && btnTotal > 1 && size[0]) {
-    const gap = 10; // 버튼 간 여백
-    const totalWidth = btnTotal * size[0] + (btnTotal - 1) * gap;
-    const xOffset = (btnIdx - (btnTotal - 1) / 2) * (size[0] + gap);
-    renderPos = [xOffset, 0, z];
+  // wallType에 따른 rotation 설정
+  let rotation = [0, 0, 0];
+  if (wallType === 'ceiling') {
+    rotation = [-Math.PI / 2, 0, 0];
+  } else if (wallType === 'floor') {
+    rotation = [Math.PI / 2, 0, 0];
   }
 
   return (
     <mesh
       ref={meshRef}
-      position={renderPos}
+      position={position}
+      rotation={rotation}
       onClick={handleClick}
       onPointerMove={handlePointerMove}
       onPointerOut={handlePointerOut}
@@ -496,9 +504,9 @@ const Room = ({
                 z = 0.07;
               } else if (wall.type === 'ceiling' || wall.type === 'floor') {
                 z = 0.2;
-                // Button에서 size[0]을 받아서 위치 계산하도록 btnWidth, total, idx 전달
+                // getButtonPosition 함수를 사용하여 위치 계산
                 const total = wallButtonData[wall.type].length;
-                pos = [0, 0, z]; // Button에서 보정
+                const pos = getButtonPosition(wall.type, btn.key, idx, total);
                 return (
                   <Button
                     key={btn.key}
@@ -525,6 +533,7 @@ const Room = ({
                 z = baseZ + idx * 0.01;
                 pos = [0, 0, z];
               }
+              
               return (
                 <Button
                   key={btn.key}
