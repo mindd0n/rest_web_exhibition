@@ -1,7 +1,7 @@
 import React from 'react';
 import HTMLFlipBook from 'react-pageflip';
 
-const diaryImages = Array.from({ length: 16 }, (_, i) => `./images/${i + 1}.jpg`);
+const diaryImages = Array.from({ length: 16 }, (_, i) => `images/${i + 1}.jpg`);
 
 export default function DiaryModal({ onClose }) {
   return (

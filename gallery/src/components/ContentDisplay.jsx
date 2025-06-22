@@ -71,7 +71,7 @@ const VideoPopup = ({ videoSrc, onClose }) => {
 const ContentMap = {
   // Pavilion
   'btn_p_pavilion': { type: 'custom' },
-  'btn_p_note': { type: 'iframe', src: '/content/btn_p_note/F.cocoon-diary/build/index.html' },
+  'btn_p_note': { type: 'iframe', src: 'http://localhost:3000/content/btn_p_note/F.cocoon-diary/dist/index.html' },
   'btn_p_tree': { type: 'custom' },
   'btn_p_go': { type: 'custom' },
 
@@ -82,8 +82,8 @@ const ContentMap = {
   'btn_h_home': { type: 'iframe', src: '/content/btn_h_home/j/build/index.html' },
 
   // Bus-stop
-  'btn_b_bus': { type: 'video', src: '/content/videos/i.mp4' },
-  'btn_b_busstop': { type: 'video', src: '/content/videos/H.mp4' },
+  'btn_b_bus': { type: 'video', src: '/content/btn_b_bus/i.mp4' },
+  'btn_b_busstop': { type: 'video', src: '/content/btn_b_busstop/H.mp4' },
   'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/build/index.html' },
   
   // Ceiling
@@ -220,28 +220,33 @@ const ContentDisplay = ({ buttonId, onClose }) => {
             position: 'relative',
           }}
         >
-          <img 
-            src="/content/popup/popup_bg.png" 
-            alt="Popup UI" 
-            style={{ 
-              display: 'block',
-              maxWidth: '98vw',
-              maxHeight: '98vh',
-              filter: 'brightness(1.3)' 
-            }}
-          />
-          <div 
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'rgba(255,255,255,0.10)',
-              zIndex: 1,
-              pointerEvents: 'none',
-            }}
-          />
+          {buttonId !== 'btn_p_note' && (
+            <img 
+              src="/content/popup/popup_bg.png" 
+              alt="Popup UI" 
+              style={{ 
+                display: 'block',
+                width: 'auto',
+                maxWidth: '98vw',
+                maxHeight: '98vh',
+                filter: 'brightness(1.3)' 
+              }}
+            />
+          )}
+          {buttonId !== 'btn_p_note' && (
+            <div 
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(255,255,255,0.10)',
+                zIndex: 1,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
           <div 
             style={{
               position: 'absolute',
@@ -250,7 +255,7 @@ const ContentDisplay = ({ buttonId, onClose }) => {
               width: '100%',
               height: '100%',
               boxSizing: 'border-box',
-              padding: '8% 10%',
+              padding: buttonId === 'btn_p_note' ? '0' : '2% 10% 10% 10%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
