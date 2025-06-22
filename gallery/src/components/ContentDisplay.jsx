@@ -168,7 +168,7 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: 'rgba(0, 0, 0, 0.88)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -180,24 +180,36 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           onClick={handleContentClick}
           style={{
             position: 'relative',
-            width: '85vw',
-            maxWidth: '1400px',
-            maxHeight: '85vh',
+            width: '95vw',
+            maxWidth: '1800px',
+            maxHeight: '95vh',
             aspectRatio: '10/9',
           }}
         >
           <img 
             src="/content/popup/popup_bg.png" 
             alt="Popup UI" 
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+            style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'brightness(1.3)' }}
           />
           <div 
             style={{
               position: 'absolute',
-              top: '10%',
-              left: '10%',
-              width: '80%',
-              height: '80%',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(255,255,255,0.10)',
+              zIndex: 1,
+              pointerEvents: 'none',
+            }}
+          />
+          <div 
+            style={{
+              position: 'absolute',
+              top: '1%',
+              left: '1%',
+              width: '98%',
+              height: '98%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -222,9 +234,9 @@ const ContentDisplay = ({ buttonId, onClose }) => {
             alt="Back button"
             style={{
               position:'absolute', 
-              right:'24%', 
-              bottom:'8%', 
-              width:'100px', 
+              right:'18%',
+              bottom:'4%', 
+              width:'120px',
               height:'auto', 
               cursor:'pointer',
               zIndex: 3,
