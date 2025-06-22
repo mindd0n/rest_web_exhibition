@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import InteractiveGoButton from './InteractiveGoButton.jsx';
 import PavilionContent from './content/PavilionContent.jsx';
+import HomeContent from './content/HomeContent.jsx';
 
 // 비디오 팝업 컴포넌트
 const VideoPopup = ({ videoSrc, onClose }) => {
@@ -76,9 +77,9 @@ const ContentMap = {
 
   // Home
   'btn_h_dog': { type: 'iframe', src: '/content/btn_h_dog/S.hoya-story/dist/index.html' },
-  'btn_h_star': { type: 'iframe', src: '/content/btn_h_star/T.cocooon-scroll-gallery/build/index.html' },
+  'btn_h_star': { type: 'custom' },
   'btn_h_ribbon': { type: 'video', src: '/content/btn_h_ribbon/R.mp4' },
-  'btn_h_home': { type: 'iframe', src: '/content/btn_h_home/j/build/index.html' },
+  'btn_h_home': { type: 'custom' },
 
   // Bus-stop
   'btn_b_bus': { type: 'video', src: '/content/btn_b_bus/i.mp4' },
@@ -129,6 +130,135 @@ const TreeContent = () => {
   );
 };
 
+const StarContent = () => {
+  console.log('StarContent rendering');
+  
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryReady, setGalleryReady] = useState(false);
+
+  const handleClick = () => {
+    setShowGallery(true);
+    setGalleryReady(false);
+
+    setTimeout(() => {
+      const section = document.getElementById("gallery");
+      section?.scrollIntoView({ behavior: "smooth" });
+      setGalleryReady(true);
+    }, 100);
+  };
+
+  const images = [
+    "/content/btn_h_star/T.cocooon-scroll-gallery/public/1.jpeg",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/public/2.JPEG",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/public/3.JPEG",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/public/4.JPEG",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/public/5.JPEG",
+  ];
+
+  return (
+    <div style={{ 
+      width: '100%', 
+      height: '100%', 
+      backgroundColor: 'black',
+      color: 'white',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'auto',
+      padding: '30px'
+    }}>
+      {!showGallery && (
+        <button
+          style={{
+            fontSize: '16px',
+            border: '1px solid white',
+            padding: '10px 20px',
+            borderRadius: '4px',
+            backgroundColor: 'transparent',
+            color: 'white',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = 'white';
+            e.target.style.color = 'black';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'transparent';
+            e.target.style.color = 'white';
+          }}
+          onClick={handleClick}
+        >
+          사진 보러 가기
+        </button>
+      )}
+
+      {showGallery && (
+        <div id="gallery" style={{ 
+          marginTop: '20px', 
+          padding: '0 12px 50px 12px', 
+          width: '100%',
+          maxWidth: '500px',
+          maxHeight: 'calc(100vh - 200px)',
+          overflowY: 'auto'
+        }}>
+          {images.map((src, index) => (
+            <img
+              key={index}
+              src={src}
+              alt={`사진 ${index + 1}`}
+              style={{
+                width: '100%',
+                maxWidth: '100%',
+                height: 'auto',
+                borderRadius: '6px',
+                marginBottom: '20px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                objectFit: 'contain'
+              }}
+            />
+          ))}
+
+          {galleryReady && (
+            <div style={{ 
+              width: '100%', 
+              display: 'flex', 
+              justifyContent: 'center', 
+              marginTop: '20px',
+              paddingBottom: '20px'
+            }}>
+              <button
+                onClick={() => setShowGallery(false)}
+                style={{
+                  fontSize: '14px',
+                  border: '1px solid white',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  backgroundColor: 'transparent',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'white';
+                  e.target.style.color = 'black';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = 'white';
+                }}
+              >
+                Back
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
   const baseStyle = {
     width: '100%',
@@ -169,6 +299,7 @@ const ContentDisplay = ({ buttonId, onClose }) => {
   const contentInfo = ContentMap[buttonId];
 
   useEffect(() => {
+    console.log('ContentDisplay useEffect:', { buttonId, contentInfo });
     if (buttonId && contentInfo) {
       setShow(true);
     } else {
@@ -192,8 +323,11 @@ const ContentDisplay = ({ buttonId, onClose }) => {
   };
 
   if (!show || !contentInfo) {
+    console.log('ContentDisplay not showing:', { show, contentInfo });
     return null;
   }
+
+  console.log('ContentDisplay rendering:', { buttonId, contentInfo });
 
   return (
     <>
@@ -217,15 +351,15 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           onClick={handleContentClick}
           style={{
             position: 'relative',
-            width: buttonId === 'btn_p_note' ? '90vw' : 'auto',
-            height: buttonId === 'btn_p_note' ? '80vh' : 'auto',
-            maxWidth: buttonId === 'btn_p_note' ? '1200px' : '98vw',
-            maxHeight: buttonId === 'btn_p_note' ? '800px' : '98vh',
-            backgroundColor: buttonId === 'btn_p_note' ? '#000' : 'transparent',
-            borderRadius: buttonId === 'btn_p_note' ? '8px' : '0',
+            width: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '90vw' : 'auto',
+            height: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '80vh' : 'auto',
+            maxWidth: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '1200px' : '98vw',
+            maxHeight: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '800px' : '98vh',
+            backgroundColor: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '#000' : 'transparent',
+            borderRadius: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '8px' : '0',
           }}
         >
-          {buttonId !== 'btn_p_note' && (
+          {buttonId !== 'btn_p_note' && buttonId !== 'btn_h_star' && (
             <img 
               src="/content/popup/popup_bg.png" 
               alt="Popup UI" 
@@ -238,7 +372,7 @@ const ContentDisplay = ({ buttonId, onClose }) => {
               }}
             />
           )}
-          {buttonId !== 'btn_p_note' && (
+          {buttonId !== 'btn_p_note' && buttonId !== 'btn_h_star' && (
             <div 
               style={{
                 position: 'absolute',
@@ -260,7 +394,7 @@ const ContentDisplay = ({ buttonId, onClose }) => {
               width: '100%',
               height: '100%',
               boxSizing: 'border-box',
-              padding: buttonId === 'btn_p_note' ? '0' : '2% 10% 10% 10%',
+              padding: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '0' : '2% 10% 10% 10%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -281,8 +415,12 @@ const ContentDisplay = ({ buttonId, onClose }) => {
                 );
               } else if (buttonId === 'btn_p_pavilion') {
                 return <PavilionContent />;
+              } else if (buttonId === 'btn_h_home') {
+                return <HomeContent />;
               } else if (buttonId === 'btn_p_tree') {
                 return <TreeContent />;
+              } else if (buttonId === 'btn_h_star') {
+                return <StarContent />;
               } else {
                 return <GenericContent type={contentInfo.type} src={contentInfo.src} onClose={onClose} />;
               }

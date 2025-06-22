@@ -16,11 +16,11 @@ const ScrollGallery = () => {
   };
 
   const images = [
-    "/1.jpeg",
-    "/2.JPEG",
-    "/3.JPEG",
-    "/4.JPEG",
-    "/5.JPEG",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/dist/1.jpeg",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/dist/2.JPEG",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/dist/3.JPEG",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/dist/4.JPEG",
+    "/content/btn_h_star/T.cocooon-scroll-gallery/dist/5.JPEG",
   ];
 
   return (
