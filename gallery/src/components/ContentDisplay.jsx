@@ -98,7 +98,7 @@ const ContentMap = {
   'btn_w_walk': { type: 'video', src: '/content/videos/L.mp4' },
   'btn_w_bridge': { type: 'video', src: '/content/videos/M.mp4' },
   'btn_w_sign': { type: 'video', src: '/content/videos/N.mp4' },
-  'btn_w_sun': { type: 'video', src: '/content/videos/P.mp4' },
+  'btn_w_sun': { type: 'custom' },
 };
 
 const TreeContent = () => {
@@ -255,6 +255,123 @@ const StarContent = () => {
           )}
         </div>
       )}
+    </div>
+  );
+};
+
+const SunContent = () => {
+  return (
+    <div style={{ 
+      width: '100%', 
+      height: '100%', 
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      {/* 메인 이미지 */}
+      <img 
+        src="/content/btn_w_sun/k.PNG" 
+        alt="Sun Image"
+        className="sun-main-image"
+        style={{
+          width: '120%',
+          height: '120%',
+          objectFit: 'contain',
+          position: 'absolute',
+          top: '-40px',
+          left: '-10%'
+        }}
+      />
+      
+      {/* Spotify 플레이리스트 - 후측 하단 */}
+      <div 
+        className="sun-playlist-container"
+        style={{
+          position: 'absolute',
+          bottom: '100px',
+          right: '-20px',
+          zIndex: 10,
+          width: '300px',
+          height: '152px'
+        }}
+      >
+        <iframe 
+          className="sun-playlist-iframe"
+          style={{borderRadius: '12px'}} 
+          src="https://open.spotify.com/embed/playlist/5jngExT7M9drt4yVZvrzQu?utm_source=generator" 
+          width="100%" 
+          height="152" 
+          frameBorder="0" 
+          allowFullScreen="" 
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+          loading="lazy"
+        />
+      </div>
+      
+      <style jsx>{`
+        .sun-main-image {
+          width: 120%;
+          height: 120%;
+          object-fit: contain;
+          position: absolute;
+          top: -40px;
+          left: -10%;
+        }
+        
+        .sun-playlist-container {
+          position: absolute;
+          bottom: 100px;
+          right: -20px;
+          z-index: 10;
+          width: 300px;
+          height: 152px;
+        }
+        
+        .sun-playlist-iframe {
+          border-radius: 12px;
+        }
+        
+        @media (max-width: 1024px) {
+          .sun-main-image {
+            width: 110%;
+            height: 110%;
+            top: -20px;
+            left: -5%;
+          }
+          
+          .sun-playlist-container {
+            bottom: 20px;
+            right: -20px;
+            width: 180px;
+            height: 120px;
+          }
+          
+          .sun-playlist-iframe {
+            height: 120px;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .sun-main-image {
+            width: 100%;
+            height: 100%;
+            top: 0px;
+            left: 0px;
+          }
+          
+          .sun-playlist-container {
+            bottom: 5px;
+            right: -10px;
+            width: 140px;
+            height: 100px;
+          }
+          
+          .sun-playlist-iframe {
+            height: 100px;
+          }
+        }
+      `}</style>
     </div>
   );
 };
@@ -421,6 +538,8 @@ const ContentDisplay = ({ buttonId, onClose }) => {
                 return <TreeContent />;
               } else if (buttonId === 'btn_h_star') {
                 return <StarContent />;
+              } else if (buttonId === 'btn_w_sun') {
+                return <SunContent />;
               } else {
                 return <GenericContent type={contentInfo.type} src={contentInfo.src} onClose={onClose} />;
               }
@@ -429,6 +548,7 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           <img 
             src="/content/popup/btn_back.png" 
             alt="Back button"
+            className="back-button"
             style={{
               position:'absolute', 
               right:'1%',
@@ -440,6 +560,34 @@ const ContentDisplay = ({ buttonId, onClose }) => {
             }}
             onClick={handleClose}
           />
+          
+          <style jsx>{`
+            .back-button {
+              position: absolute;
+              right: 1%;
+              bottom: 8%;
+              width: 100px;
+              height: auto;
+              cursor: pointer;
+              z-index: 2;
+            }
+            
+            @media (max-width: 1024px) {
+              .back-button {
+                width: 80px;
+                right: 2%;
+                bottom: 6%;
+              }
+            }
+            
+            @media (max-width: 768px) {
+              .back-button {
+                width: 60px;
+                right: 3%;
+                bottom: 4%;
+              }
+            }
+          `}</style>
         </div>
       </div>
       
