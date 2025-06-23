@@ -31,7 +31,7 @@ const VideoPopup = ({ videoSrc, onClose }) => {
           maxHeight: '800px',
         }}
         onClick={(e) => e.stopPropagation()}
-      >
+      >ㅈ
         <button
           onClick={onClose}
           style={{
@@ -82,8 +82,8 @@ const ContentMap = {
   'btn_h_home': { type: 'custom' },
 
   // Bus-stop
-  'btn_b_bus': { type: 'video', src: '/content/btn_b_bus/i.mp4' },
-  'btn_b_busstop': { type: 'video', src: '/content/btn_b_busstop/H.mp4' },
+  'btn_b_bus': { type: 'video', src: '/deploy_videos/i.mp4' },
+  'btn_b_busstop': { type: 'video', src: '/deploy_videos/H.mp4' },
   'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/index.html' },
   
   // Ceiling
@@ -95,9 +95,9 @@ const ContentMap = {
   'btn_f_phone': { type: 'iframe', src: '/content/btn_f_phone/V.디지털디톡스/build/index.html' },
 
   // Walk
-  'btn_w_walk': { type: 'video', src: '/content/videos/L.mp4' },
-  'btn_w_bridge': { type: 'video', src: '/content/videos/M.mp4' },
-  'btn_w_sign': { type: 'video', src: '/content/videos/N.mp4' },
+  'btn_w_walk': { type: 'video', src: '/deploy_videos/L.mp4' },
+  'btn_w_bridge': { type: 'video', src: '/deploy_videos/M.mp4' },
+  'btn_w_sign': { type: 'video', src: '/deploy_videos/N.mp4' },
   'btn_w_sun': { type: 'custom' },
 };
 
