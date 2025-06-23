@@ -365,20 +365,20 @@ const Room = ({
     ],
     'back': [
       { key: 'btn_w_bridge', src: '/images/buttons/wall_walk_btn/btn_w_bridge.png', hoverSrc: '/images/buttons/wall_walk_btn/btn_w_bridge_hover.png' },
-      { key: 'btn_w_sign',   src: '/images/buttons/wall_walk_btn/btn_w_sign.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sign_hover.png' },
-      { key: 'btn_w_sun',    src: '/images/buttons/wall_walk_btn/btn_w_sun.png',    hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sun_hover.png' },
       { key: 'btn_w_walk',   src: '/images/buttons/wall_walk_btn/btn_w_walk.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_walk_hover.png' },
+      { key: 'btn_w_sun',    src: '/images/buttons/wall_walk_btn/btn_w_sun.png',    hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sun_hover.png' },
+      { key: 'btn_w_sign',   src: '/images/buttons/wall_walk_btn/btn_w_sign.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sign_hover.png' },
     ],
     'left': [
-      { key: 'btn_b_bus',     src: '/images/buttons/wall_bus-stop_btn/btn_b_bus.png',     hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_bus_hover.png' },
       { key: 'btn_b_busstop', src: '/images/buttons/wall_bus-stop_btn/btn_b_busstop.png', hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_busstop_hover.png' },
+      { key: 'btn_b_bus',     src: '/images/buttons/wall_bus-stop_btn/btn_b_bus.png',     hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_bus_hover.png' },
       { key: 'btn_b_home',    src: '/images/buttons/wall_bus-stop_btn/btn_b_home.png',    hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_home_hover.png' },
     ],
     'right': [
       { key: 'btn_h_dog',    src: '/images/buttons/wall_home_btn/btn_h_dog.png',    hoverSrc: '/images/buttons/wall_home_btn/btn_h_dog_hover.png' },
-      { key: 'btn_h_home',   src: '/images/buttons/wall_home_btn/btn_h_home.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_home_hover.png' },
       { key: 'btn_h_ribbon', src: '/images/buttons/wall_home_btn/btn_h_ribbon.png', hoverSrc: '/images/buttons/wall_home_btn/btn_h_ribbon_hover.png' },
       { key: 'btn_h_star',   src: '/images/buttons/wall_home_btn/btn_h_star.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_star_hover.png' },
+      { key: 'btn_h_home',   src: '/images/buttons/wall_home_btn/btn_h_home.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_home_hover.png' },
     ],
   };
 
@@ -426,13 +426,23 @@ const Room = ({
               if (wall.type === 'front' && btn.src.includes('btn_p_tree')) {
                 z = -0.05;
               } else if (wall.type === 'back' && btn.key === 'btn_w_sign') {
-                z = 0.09;
+                z = 0.15; // Back 벽은 180도 회전되어 있어서 큰 숫자가 앞으로
               } else if (wall.type === 'back' && btn.key === 'btn_w_bridge') {
-                z = 0.07;
+                z = 0.10; // 두 번째
+              } else if (wall.type === 'back' && btn.key === 'btn_w_sun') {
+                z = 0.05; // 세 번째
+              } else if (wall.type === 'back' && btn.key === 'btn_w_walk') {
+                z = 0.01; // 가장 뒤로
+              } else if (wall.type === 'right' && btn.key === 'btn_h_home') {
+                z = 0.01; // btn_h_home은 가장 뒤로
               } else {
                 let baseZ = 0.01;
                 if (wall.type === 'front' && btn.src.includes('btn_p_go')) baseZ = 0.02;
-                z = baseZ + idx * 0.01;
+                if (wall.type === 'right' && btn.key === 'btn_h_home') {
+                  z = 0.01; // btn_h_home은 가장 뒤로
+                } else {
+                  z = baseZ + idx * 0.01;
+                }
                 pos = [0, 0, z];
               }
               
