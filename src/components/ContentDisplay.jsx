@@ -71,7 +71,7 @@ const VideoPopup = ({ videoSrc, onClose }) => {
 const ContentMap = {
   // Pavilion
   'btn_p_pavilion': { type: 'custom' },
-  'btn_p_note': { type: 'iframe', src: '/content/btn_p_note/F.cocoon-diary/dist/index.html' },
+  'btn_p_note': { type: 'iframe', src: '/cocooon-gallery/dist/index.html' },
   'btn_p_tree': { type: 'custom' },
   'btn_p_go': { type: 'custom' },
 
@@ -86,14 +86,6 @@ const ContentMap = {
   'btn_b_busstop': { type: 'video', src: '/deploy_videos/H.mp4' },
   'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/index.html' },
   
-  // Ceiling
-  'btn_c_heart': { type: 'image', src: '/content/btn_c_heart/U.PNG' },
-  'btn_c_lamp': { type: 'video', src: '/content/videos/O.mp4' },
-  
-  // Floor
-  'btn_f_rug': { type: 'iframe', src: '/content/btn_f_rug/참여형 페이지/build/index.html' },
-  'btn_f_phone': { type: 'iframe', src: '/content/btn_f_phone/V.디지털디톡스/build/index.html' },
-
   // Walk
   'btn_w_walk': { type: 'video', src: '/deploy_videos/L.mp4' },
   'btn_w_bridge': { type: 'video', src: '/deploy_videos/M.mp4' },

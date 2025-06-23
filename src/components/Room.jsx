@@ -14,13 +14,6 @@ import gsap from 'gsap';
 function getButtonPosition(wallType, buttonKey, index, total) {
   const gap = 20;
   
-  // 천장과 바닥 버튼은 x축 기준으로 균등 분산
-  if (wallType === 'ceiling' || wallType === 'floor') {
-    const offset = (index - (total - 1) / 2) * gap;
-    const y = wallType === 'ceiling' ? roomHeight / 2 - 0.01 : -roomHeight / 2 + 0.01;
-    return [offset, y, 0];
-  }
-  
   // 기존 벽면들은 현재 방식 유지
   const baseY = 0;
   const baseZ = 0.1;
@@ -416,14 +409,6 @@ const Room = ({
         { key: 'btn_h_ribbon', src: '/images/buttons/wall_home_btn/btn_h_ribbon.png', hoverSrc: '/images/buttons/wall_home_btn/btn_h_ribbon_hover.png' },
         { key: 'btn_h_star',   src: '/images/buttons/wall_home_btn/btn_h_star.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_star_hover.png' },
       ],
-      'ceiling': [
-        { key: 'btn_c_heart', src: '/images/buttons/wall_ceiling_btn/btn_c_heart.png', hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_heart_hover.png' },
-        { key: 'btn_c_lamp', src: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png', hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png' },
-      ],
-      'floor': [
-        { key: 'btn_f_phone', src: '/images/buttons/wall_floor_btn/btn_f_phone.png', hoverSrc: '/images/buttons/wall_floor_btn/btn_f_phone_hover.png' },
-        { key: 'btn_f_rug',   src: '/images/buttons/wall_floor_btn/btn_f_rug.png',   hoverSrc: '/images/buttons/wall_floor_btn/btn_f_rug_hover.png' },
-      ],
     };
 
     return Object.entries(wallButtonData).flatMap(([wallType, wallButtons]) => 
@@ -502,34 +487,9 @@ const Room = ({
                 z = 0.09;
               } else if (wall.type === 'back' && btn.key === 'btn_w_bridge') {
                 z = 0.07;
-              } else if (wall.type === 'ceiling' || wall.type === 'floor') {
-                z = 0.2;
-                // getButtonPosition 함수를 사용하여 위치 계산
-                const total = wallButtonData[wall.type].length;
-                const pos = getButtonPosition(wall.type, btn.key, idx, total);
-                return (
-                  <Button
-                    key={btn.key}
-                    type={`${wall.type}_btn_${idx}`}
-                    buttonKey={btn.key}
-                    position={pos}
-                    src={btn.src}
-                    hoverSrc={btn.src.replace(/\.png$/, '_hover.png')}
-                    wallType={wall.type}
-                    setHoveredObject={setHoveredObject}
-                    hoveredObject={hoveredObject}
-                    controlsRef={buttonRef}
-                    setSelectedButton={setSelectedButton}
-                    animateCamera={animateCamera}
-                    btnIdx={idx}
-                    btnTotal={total}
-                  />
-                );
               } else {
                 let baseZ = 0.01;
-                if (wall.type === 'ceiling') baseZ = -0.05;
-                else if (wall.type === 'floor') baseZ = 0.05;
-                else if (wall.type === 'front' && btn.src.includes('btn_p_go')) baseZ = 0.02;
+                if (wall.type === 'front' && btn.src.includes('btn_p_go')) baseZ = 0.02;
                 z = baseZ + idx * 0.01;
                 pos = [0, 0, z];
               }
