@@ -31,6 +31,18 @@ const HomeContent = () => {
     });
   }, []);
 
+  // iframe 메시지 이벤트 리스너 추가
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data === 'closeNewspaper') {
+        setSelectedContent(null);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   const isPixelTransparent = (x, y, iconId, element) => {
     const imageData = imageDataRef.current[iconId];
     if (!imageData || !element) {
@@ -81,7 +93,7 @@ const HomeContent = () => {
 
     switch (selectedContent) {
       case 'icon_o': return <video key="video_o" src="/deploy_videos/O.mp4" style={{ width: '100%', height: '100%', objectFit: 'contain' }} controls autoPlay loop playsInline />;
-      case 'icon_p': return <iframe key="iframe_p" src="/content/btn_h_home/P.수면신문/dist/index.html" style={{ width: '100%', height: '100%', border: 'none' }} title="수면신문" />;
+      case 'icon_p': return <iframe key="iframe_p" src="/content/btn_h_home/P.수면신문/dist/index.html" style={{ width: '100%', height: '100%', border: 'none', minHeight: '600px' }} title="수면신문" />;
       case 'icon_q': return <video key="video_q" src="/deploy_videos/Q.mp4" style={{ width: '100%', height: '100%', objectFit: 'contain' }} controls autoPlay loop playsInline />;
       default: return null;
     }
@@ -112,9 +124,11 @@ const HomeContent = () => {
       {/* 2차 팝업창 */}
       {selectedContent && (
         <div className="detail-popup-overlay" onClick={handleCloseDetail}>
-          <div className="detail-popup-content">
+          <div className={`detail-popup-content ${selectedContent === 'icon_p' ? 'large' : ''}`}>
             {renderDetailContent()}
-            <button onClick={handleCloseDetail} className="close-detail-button">X</button>
+            {selectedContent !== 'icon_p' && (
+              <button onClick={handleCloseDetail} className="close-detail-button">X</button>
+            )}
           </div>
         </div>
       )}

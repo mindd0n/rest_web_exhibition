@@ -87,6 +87,14 @@
   overflow: hidden;
 }
 
+/* 수면신문(icon-p)의 경우 더 큰 팝업창 */
+.detail-popup-content.large {
+  width: 95vw;
+  height: 95vh;
+  max-width: 1400px;
+  max-height: 900px;
+}
+
 .close-detail-button {
   position: absolute;
   top: 10px;
