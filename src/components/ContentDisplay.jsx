@@ -125,19 +125,16 @@ const TreeContent = () => {
 const StarContent = () => {
   console.log('StarContent rendering');
   
-  const [showGallery, setShowGallery] = useState(false);
   const [galleryReady, setGalleryReady] = useState(false);
 
-  const handleClick = () => {
-    setShowGallery(true);
-    setGalleryReady(false);
-
+  useEffect(() => {
+    // 컴포넌트가 마운트되면 바로 갤러리 준비
     setTimeout(() => {
       const section = document.getElementById("gallery");
       section?.scrollIntoView({ behavior: "smooth" });
       setGalleryReady(true);
     }, 100);
-  };
+  }, []);
 
   const images = [
     "/content/btn_h_star/T.cocooon-scroll-gallery/public/1.jpeg",
@@ -158,95 +155,39 @@ const StarContent = () => {
       alignItems: 'center',
       justifyContent: 'center',
       overflow: 'auto',
-      padding: '30px'
+      padding: '30px',
+      zIndex: 15,
+      position: 'relative'
     }}>
-      {!showGallery && (
-        <button
-          style={{
-            fontSize: '16px',
-            border: '1px solid white',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            backgroundColor: 'transparent',
-            color: 'white',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = 'white';
-            e.target.style.color = 'black';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'transparent';
-            e.target.style.color = 'white';
-          }}
-          onClick={handleClick}
-        >
-          사진 보러 가기
-        </button>
-      )}
-
-      {showGallery && (
-        <div id="gallery" style={{ 
-          marginTop: '20px', 
-          padding: '0 12px 50px 12px', 
-          width: '100%',
-          maxWidth: '500px',
-          maxHeight: 'calc(100vh - 200px)',
-          overflowY: 'auto'
-        }}>
-          {images.map((src, index) => (
-            <img
-              key={index}
-              src={src}
-              alt={`사진 ${index + 1}`}
-              style={{
-                width: '100%',
-                maxWidth: '100%',
-                height: 'auto',
-                borderRadius: '6px',
-                marginBottom: '20px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
-                objectFit: 'contain'
-              }}
-            />
-          ))}
-
-          {galleryReady && (
-            <div style={{ 
-              width: '100%', 
-              display: 'flex', 
-              justifyContent: 'center', 
-              marginTop: '20px',
-              paddingBottom: '20px'
-            }}>
-              <button
-                onClick={() => setShowGallery(false)}
-                style={{
-                  fontSize: '14px',
-                  border: '1px solid white',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  backgroundColor: 'transparent',
-                  color: 'white',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'white';
-                  e.target.style.color = 'black';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = 'white';
-                }}
-              >
-                Back
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      <div id="gallery" style={{ 
+        marginTop: '20px', 
+        padding: '0 12px 50px 12px', 
+        width: '100%',
+        maxWidth: '500px',
+        maxHeight: 'calc(100vh - 200px)',
+        overflowY: 'auto',
+        zIndex: 16,
+        position: 'relative'
+      }}>
+        {images.map((src, index) => (
+          <img
+            key={index}
+            src={src}
+            alt={`사진 ${index + 1}`}
+            style={{
+              width: '100%',
+              maxWidth: '100%',
+              height: 'auto',
+              borderRadius: '6px',
+              marginBottom: '20px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+              objectFit: 'contain',
+              zIndex: 17,
+              position: 'relative'
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };
@@ -390,7 +331,19 @@ const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
       );
     case 'iframe':
       return (
-        <iframe src={src} style={baseStyle} title="content" />
+        <iframe 
+          src={src} 
+          style={{ 
+            width: '100%',
+            height: '100%',
+            border: 'none',
+            minHeight: '500px',
+            backgroundColor: 'transparent',
+            zIndex: 15,
+            position: 'relative'
+          }} 
+          title="content" 
+        />
       );
     case 'image':
       return (
@@ -460,15 +413,15 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           onClick={handleContentClick}
           style={{
             position: 'relative',
-            width: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '90vw' : 'auto',
-            height: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '80vh' : 'auto',
-            maxWidth: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '1200px' : '98vw',
-            maxHeight: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '800px' : '98vh',
-            backgroundColor: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '#000' : 'transparent',
-            borderRadius: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '8px' : '0',
+            width: buttonId === 'btn_p_note' ? '90vw' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '90vw' : 'auto'),
+            height: buttonId === 'btn_p_note' ? '80vh' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '80vh' : 'auto'),
+            maxWidth: buttonId === 'btn_p_note' ? '1200px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '1200px' : '98vw'),
+            maxHeight: buttonId === 'btn_p_note' ? '800px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '800px' : '98vh'),
+            backgroundColor: buttonId === 'btn_p_note' ? '#000' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? 'rgba(0, 0, 0, 0.95)' : 'transparent'),
+            borderRadius: buttonId === 'btn_p_note' ? '8px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '8px' : '0'),
           }}
         >
-          {buttonId !== 'btn_p_note' && buttonId !== 'btn_h_star' && (
+          {buttonId !== 'btn_p_note' && buttonId !== 'btn_h_star' && buttonId !== 'btn_h_dog' && (
             <img 
               src="/content/popup/popup_bg.png" 
               alt="Popup UI" 
@@ -481,7 +434,7 @@ const ContentDisplay = ({ buttonId, onClose }) => {
               }}
             />
           )}
-          {buttonId !== 'btn_p_note' && buttonId !== 'btn_h_star' && (
+          {buttonId !== 'btn_p_note' && buttonId !== 'btn_h_star' && buttonId !== 'btn_h_dog' && (
             <div 
               style={{
                 position: 'absolute',
@@ -503,11 +456,12 @@ const ContentDisplay = ({ buttonId, onClose }) => {
               width: '100%',
               height: '100%',
               boxSizing: 'border-box',
-              padding: buttonId === 'btn_p_note' || buttonId === 'btn_h_star' ? '0' : '2% 10% 10% 10%',
+              padding: buttonId === 'btn_p_note' ? '0' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '0' : '2% 10% 10% 10%'),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 3,
+              zIndex: buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? 10 : 3,
+              backgroundColor: 'transparent',
             }}
           >
             {(() => {
