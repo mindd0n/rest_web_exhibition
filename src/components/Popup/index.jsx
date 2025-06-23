@@ -32,10 +32,6 @@ const Popup = ({ isOpen, onClose, buttonType }) => {
         return <iframe title="Bus Content" src="/popup-content/btn_b_bus/content/index.html" style={{ width: '100%', height: '100%', border: 'none' }} />;
       case 'btn_b_home':
         return <iframe title="B Home Content" src="/popup-content/btn_b_home/content/index.html" style={{ width: '100%', height: '100%', border: 'none' }} />;
-      case 'btn_c_heart':
-        return <iframe title="Heart Content" src="/popup-content/btn_c_heart/content/index.html" style={{ width: '100%', height: '100%', border: 'none' }} />;
-      case 'btn_c_lamp':
-        return <iframe title="Lamp Content" src="/popup-content/btn_c_lamp/content/index.html" style={{ width: '100%', height: '100%', border: 'none' }} />;
       case 'btn_w_sign':
         return (
           <>

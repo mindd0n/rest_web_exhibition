@@ -7,8 +7,6 @@ const WALL_SIZES = {
   back:   [166.68, 150],   // roomWidth, roomHeight
   left:   [166.68, 150],   // roomWidth, roomHeight
   right:  [166.68, 150],   // roomWidth, roomHeight
-  ceiling:[166.68, 166.68],// roomWidth, roomDepth (정사각형)
-  floor:  [166.68, 166.68] // roomWidth, roomDepth (정사각형)
 };
 
 export const useButtonImageData = (src, wallType) => {
