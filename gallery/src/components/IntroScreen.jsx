@@ -6,7 +6,7 @@ const IntroScreen = ({ onComplete }) => {
 
     useEffect(() => {
         const isMobile = window.innerWidth <= 768;
-        setVideoSrc(isMobile ? '/assets/intro_m.mp4' : '/assets/intro_pc.MP4');
+        setVideoSrc(isMobile ? '/assets/intro_m.mp4' : '/deploy_videos/intro_pc.MP4');
         setPosterSrc(isMobile ? '/assets/jpg_intro_m.jpg' : '/assets/jpg_intro_pc.jpg');
     }, []);
 

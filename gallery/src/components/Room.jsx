@@ -14,13 +14,6 @@ import gsap from 'gsap';
 function getButtonPosition(wallType, buttonKey, index, total) {
   const gap = 20;
   
-  // 천장과 바닥 버튼은 x축 기준으로 균등 분산
-  if (wallType === 'ceiling' || wallType === 'floor') {
-    const offset = (index - (total - 1) / 2) * gap;
-    const y = wallType === 'ceiling' ? roomHeight / 2 - 0.01 : -roomHeight / 2 + 0.01;
-    return [offset, y, 0];
-  }
-  
   // 기존 벽면들은 현재 방식 유지
   const baseY = 0;
   const baseZ = 0.1;
@@ -109,11 +102,7 @@ function bboxCenterTo3D({min_x, min_y, width, height}) {
 
 // 3D 크기 변환 함수 (벽/천장/바닥별로 plane 크기 맞춤)
 function bboxTo3DByWall({width, height}, wallType) {
-  // 기준: 벽(2000x1800), 천장/바닥(2000x2000)
-  if (wallType === 'ceiling' || wallType === 'floor') {
-    return [width / 2000 * roomWidth, height / 2000 * roomDepth];
-  }
-  // 나머지 벽은 기존과 동일
+  // 모든 벽은 기존과 동일
   return [width / 2000 * roomWidth, height / 1800 * roomHeight];
 }
 
@@ -281,19 +270,11 @@ const Button = React.memo(function Button({
 
   if (!ready) return null;
 
-  // wallType에 따른 rotation 설정
-  let rotation = [0, 0, 0];
-  if (wallType === 'ceiling') {
-    rotation = [-Math.PI / 2, 0, 0];
-  } else if (wallType === 'floor') {
-    rotation = [Math.PI / 2, 0, 0];
-  }
-
   return (
     <mesh
       ref={meshRef}
       position={position}
-      rotation={rotation}
+      rotation={[0, 0, 0]}
       onClick={handleClick}
       onPointerMove={handlePointerMove}
       onPointerOut={handlePointerOut}
@@ -312,7 +293,7 @@ const Button = React.memo(function Button({
 // 각 벽별 버튼 파일명 명시적으로 관리
 const wallButtonFiles = {
   front: [
-    'btn_p_go.png', 'btn_p_note.png', 'btn_p_pavilion.png', 'btn_p_tree.png'
+    'btn_p_go.png', 'btn_p_tree.png', 'btn_p_note.png', 'btn_p_pavilion.png'
   ],
   right: [
     'btn_h_home.png', 'btn_h_star.png', 'btn_h_dog.png', 'btn_h_ribbon.png'
@@ -322,12 +303,6 @@ const wallButtonFiles = {
   ],
   left: [
     'btn_b_busstop.png', 'btn_b_bus.png', 'btn_b_home.png'
-  ],
-  ceiling: [
-    'btn_c_heart.png', 'btn_c_lamp.png'
-  ],
-  floor: [
-    'btn_f_rug.png', 'btn_f_phone.png'
   ]
 };
 const wallButtonFolders = {
@@ -335,16 +310,7 @@ const wallButtonFolders = {
   right: 'wall_home_btn',
   back: 'wall_walk_btn',
   left: 'wall_bus-stop_btn',
-  ceiling: 'wall_ceiling_btn',
-  floor: 'wall_floor_btn',
 };
-const wallButtonData = {};
-Object.entries(wallButtonFiles).forEach(([wall, files]) => {
-  wallButtonData[wall] = files.map(f => {
-    const key = f.replace(/\.png$/, '');
-    return { key, src: `/images/buttons/${wallButtonFolders[wall]}/${f}` };
-  });
-});
 
 // getZoomTargetForButton 함수를 일반 함수로 변경
 const getZoomTargetForButton = (position, wallType) => {
@@ -357,8 +323,6 @@ const getZoomTargetForButton = (position, wallType) => {
     case 'back': cameraPos = new THREE.Vector3(x, y, z - distance); break;
     case 'left': cameraPos = new THREE.Vector3(x + distance, y, z); break;
     case 'right': cameraPos = new THREE.Vector3(x - distance, y, z); break;
-    case 'ceiling': cameraPos = new THREE.Vector3(x, y - distance, z); break;
-    case 'floor': cameraPos = new THREE.Vector3(x, y + distance, z); break;
     default: cameraPos = new THREE.Vector3(x, y, z + distance);
   }
   return { position: cameraPos, target };
@@ -391,41 +355,34 @@ const Room = ({
     };
   }, []);
 
-  const buttons = useMemo(() => {
-    const wallButtonData = {
-      'front': [
-        { key: 'btn_p_go',       src: '/images/buttons/wall_photo_btn/btn_p_go.png',       hoverSrc: '/images/buttons/wall_photo_btn/btn_p_go_hover.png' },
-        { key: 'btn_p_tree',     src: '/images/buttons/wall_photo_btn/btn_p_tree.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_tree_hover.png' },
-        { key: 'btn_p_note',     src: '/images/buttons/wall_photo_btn/btn_p_note.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_note_hover.png' },
-        { key: 'btn_p_pavilion', src: '/images/buttons/wall_photo_btn/btn_p_pavilion.png', hoverSrc: '/images/buttons/wall_photo_btn/btn_p_pavilion_hover.png' }
-      ],
-      'back': [
-        { key: 'btn_w_bridge', src: '/images/buttons/wall_walk_btn/btn_w_bridge.png', hoverSrc: '/images/buttons/wall_walk_btn/btn_w_bridge_hover.png' },
-        { key: 'btn_w_sign',   src: '/images/buttons/wall_walk_btn/btn_w_sign.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sign_hover.png' },
-        { key: 'btn_w_sun',    src: '/images/buttons/wall_walk_btn/btn_w_sun.png',    hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sun_hover.png' },
-        { key: 'btn_w_walk',   src: '/images/buttons/wall_walk_btn/btn_w_walk.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_walk_hover.png' },
-      ],
-      'left': [
-        { key: 'btn_b_bus',     src: '/images/buttons/wall_bus-stop_btn/btn_b_bus.png',     hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_bus_hover.png' },
-        { key: 'btn_b_busstop', src: '/images/buttons/wall_bus-stop_btn/btn_b_busstop.png', hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_busstop_hover.png' },
-        { key: 'btn_b_home',    src: '/images/buttons/wall_bus-stop_btn/btn_b_home.png',    hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_home_hover.png' },
-      ],
-      'right': [
-        { key: 'btn_h_dog',    src: '/images/buttons/wall_home_btn/btn_h_dog.png',    hoverSrc: '/images/buttons/wall_home_btn/btn_h_dog_hover.png' },
-        { key: 'btn_h_home',   src: '/images/buttons/wall_home_btn/btn_h_home.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_home_hover.png' },
-        { key: 'btn_h_ribbon', src: '/images/buttons/wall_home_btn/btn_h_ribbon.png', hoverSrc: '/images/buttons/wall_home_btn/btn_h_ribbon_hover.png' },
-        { key: 'btn_h_star',   src: '/images/buttons/wall_home_btn/btn_h_star.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_star_hover.png' },
-      ],
-      'ceiling': [
-        { key: 'btn_c_heart', src: '/images/buttons/wall_ceiling_btn/btn_c_heart.png', hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_heart_hover.png' },
-        { key: 'btn_c_lamp', src: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png', hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png' },
-      ],
-      'floor': [
-        { key: 'btn_f_phone', src: '/images/buttons/wall_floor_btn/btn_f_phone.png', hoverSrc: '/images/buttons/wall_floor_btn/btn_f_phone_hover.png' },
-        { key: 'btn_f_rug',   src: '/images/buttons/wall_floor_btn/btn_f_rug.png',   hoverSrc: '/images/buttons/wall_floor_btn/btn_f_rug_hover.png' },
-      ],
-    };
+  // wallButtonData를 컴포넌트 내부로 이동
+  const wallButtonData = {
+    'front': [
+      { key: 'btn_p_go',       src: '/images/buttons/wall_photo_btn/btn_p_go.png',       hoverSrc: '/images/buttons/wall_photo_btn/btn_p_go_hover.png' },
+      { key: 'btn_p_tree',     src: '/images/buttons/wall_photo_btn/btn_p_tree.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_tree_hover.png' },
+      { key: 'btn_p_note',     src: '/images/buttons/wall_photo_btn/btn_p_note.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_note_hover.png' },
+      { key: 'btn_p_pavilion', src: '/images/buttons/wall_photo_btn/btn_p_pavilion.png', hoverSrc: '/images/buttons/wall_photo_btn/btn_p_pavilion_hover.png' }
+    ],
+    'back': [
+      { key: 'btn_w_bridge', src: '/images/buttons/wall_walk_btn/btn_w_bridge.png', hoverSrc: '/images/buttons/wall_walk_btn/btn_w_bridge_hover.png' },
+      { key: 'btn_w_walk',   src: '/images/buttons/wall_walk_btn/btn_w_walk.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_walk_hover.png' },
+      { key: 'btn_w_sun',    src: '/images/buttons/wall_walk_btn/btn_w_sun.png',    hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sun_hover.png' },
+      { key: 'btn_w_sign',   src: '/images/buttons/wall_walk_btn/btn_w_sign.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sign_hover.png' },
+    ],
+    'left': [
+      { key: 'btn_b_busstop', src: '/images/buttons/wall_bus-stop_btn/btn_b_busstop.png', hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_busstop_hover.png' },
+      { key: 'btn_b_bus',     src: '/images/buttons/wall_bus-stop_btn/btn_b_bus.png',     hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_bus_hover.png' },
+      { key: 'btn_b_home',    src: '/images/buttons/wall_bus-stop_btn/btn_b_home.png',    hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_home_hover.png' },
+    ],
+    'right': [
+      { key: 'btn_h_dog',    src: '/images/buttons/wall_home_btn/btn_h_dog.png',    hoverSrc: '/images/buttons/wall_home_btn/btn_h_dog_hover.png' },
+      { key: 'btn_h_ribbon', src: '/images/buttons/wall_home_btn/btn_h_ribbon.png', hoverSrc: '/images/buttons/wall_home_btn/btn_h_ribbon_hover.png' },
+      { key: 'btn_h_star',   src: '/images/buttons/wall_home_btn/btn_h_star.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_star_hover.png' },
+      { key: 'btn_h_home',   src: '/images/buttons/wall_home_btn/btn_h_home.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_home_hover.png' },
+    ],
+  };
 
+  const buttons = useMemo(() => {
     return Object.entries(wallButtonData).flatMap(([wallType, wallButtons]) => 
       wallButtons.map((btn, index) => {
         const position = getButtonPosition(wallType, btn.key, index, wallButtons.length);
@@ -434,103 +391,58 @@ const Room = ({
     );
   }, []);
 
-      return (
-        <>
-          {/* 조명 추가 */}
+  return (
+    <>
+      {/* 조명 추가 */}
       <ambientLight intensity={1.5} color="#ffffff" />
-          <directionalLight position={[0, 100, 100]} intensity={1.2} />
-      <directionalLight position={[0, 100, -100]} intensity={1.2} />
-      <directionalLight position={[100, 100, 0]} intensity={1.2} />
-      <directionalLight position={[-100, 100, 0]} intensity={1.2} />
-      <directionalLight position={[0, -100, 0]} intensity={0.2} />
-      <directionalLight position={[0, 100, 0]} intensity={2.0} />
-          {/* 벽과 기본 구조 */}
-          <group ref={buttonRef}>
-            {/* 바닥 */}
-            <group position={[0, -roomHeight / 2, 0]}>
-              <mesh rotation={[-Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[roomWidth, roomDepth]} />
-                <meshStandardMaterial 
-                  map={wallTextures.floor}
-              color={wallTextures.floor ? undefined : "#777777"}
-              roughness={1.0}
-              metalness={0.0}
-              side={THREE.DoubleSide}
-            />
-              </mesh>
-            </group>
-            {/* 천장 */}
-            <group position={[0, roomHeight / 2, 0]}>
-              <mesh rotation={[Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[roomWidth, roomDepth]} />
-                <meshStandardMaterial 
-                  map={wallTextures.ceiling}
-              color={wallTextures.ceiling ? undefined : "#f5f5e6"}
-              roughness={0.7}
-              metalness={0.12}
-              side={THREE.DoubleSide}
-            />
-              </mesh>
-            </group>
-            {/* 벽들 */}
-            {[
-              { pos: [0, 0, -roomDepth / 2], rot: [0, 0, 0], tex: wallTextures.front, type: 'front' },
-              { pos: [0, 0, roomDepth / 2], rot: [0, Math.PI, 0], tex: wallTextures.back, type: 'back' },
-              { pos: [-roomWidth / 2, 0, 0], rot: [0, Math.PI / 2, 0], tex: wallTextures.left, type: 'left' },
-              { pos: [roomWidth / 2, 0, 0], rot: [0, -Math.PI / 2, 0], tex: wallTextures.right, type: 'right' },
-              { pos: [0, roomHeight / 2, 0], rot: [Math.PI / 2, 0, 0], tex: wallTextures.ceiling, type: 'ceiling' },
-              { pos: [0, -roomHeight / 2, 0], rot: [-Math.PI / 2, 0, 0], tex: wallTextures.floor, type: 'floor' },
-            ].map((wall, i) => (
-              <group key={i} position={wall.pos} rotation={wall.rot}>
-                <mesh>
-                  <planeGeometry args={[roomWidth, roomHeight]} />
-                  <meshStandardMaterial 
-                    map={wall.tex}
-                    color={wall.tex ? undefined : "#cccccc"}
-                    roughness={0.7}
-                    metalness={0.12}
-                    side={THREE.DoubleSide}
-                  />
-                </mesh>
-            {/* 벽 중앙에 버튼 추가 */}
-            {wallButtonData[wall.type]?.map((btn, idx) => {
+      <directionalLight position={[0, 100, 0]} intensity={1.0} />
+      <directionalLight position={[0, -100, 0]} intensity={0.3} />
+      {/* 벽과 기본 구조 */}
+      <group ref={buttonRef}>
+        {/* 벽들 */}
+        {[
+          { pos: [0, 0, -roomDepth / 2], rot: [0, 0, 0], tex: wallTextures.front, type: 'front' },
+          { pos: [0, 0, roomDepth / 2], rot: [0, Math.PI, 0], tex: wallTextures.back, type: 'back' },
+          { pos: [-roomWidth / 2, 0, 0], rot: [0, Math.PI / 2, 0], tex: wallTextures.left, type: 'left' },
+          { pos: [roomWidth / 2, 0, 0], rot: [0, -Math.PI / 2, 0], tex: wallTextures.right, type: 'right' },
+          { pos: [0, roomHeight / 2, 0], rot: [Math.PI / 2, 0, 0], tex: wallTextures.ceiling, type: 'ceiling' },
+          { pos: [0, -roomHeight / 2, 0], rot: [-Math.PI / 2, 0, 0], tex: wallTextures.floor, type: 'floor' },
+        ].map((wall, i) => (
+          <group key={i} position={wall.pos} rotation={wall.rot}>
+            <mesh>
+              <planeGeometry args={wall.type === 'ceiling' || wall.type === 'floor' ? [roomWidth, roomDepth] : [roomWidth, roomHeight]} />
+              <meshStandardMaterial 
+                map={wall.tex}
+                color={wall.tex ? undefined : "#cccccc"}
+                roughness={0.7}
+                metalness={0.12}
+                side={THREE.FrontSide}
+              />
+            </mesh>
+            {/* 벽 중앙에 버튼 추가 - 천장과 바닥은 제외 */}
+            {wall.type !== 'ceiling' && wall.type !== 'floor' && wallButtonData[wall.type]?.map((btn, idx) => {
               let z;
               let pos = [0, 0, 0];
               if (wall.type === 'front' && btn.src.includes('btn_p_tree')) {
                 z = -0.05;
               } else if (wall.type === 'back' && btn.key === 'btn_w_sign') {
-                z = 0.09;
+                z = 0.15; // Back 벽은 180도 회전되어 있어서 큰 숫자가 앞으로
               } else if (wall.type === 'back' && btn.key === 'btn_w_bridge') {
-                z = 0.07;
-              } else if (wall.type === 'ceiling' || wall.type === 'floor') {
-                z = 0.2;
-                // getButtonPosition 함수를 사용하여 위치 계산
-                const total = wallButtonData[wall.type].length;
-                const pos = getButtonPosition(wall.type, btn.key, idx, total);
-                return (
-                  <Button
-                    key={btn.key}
-                    type={`${wall.type}_btn_${idx}`}
-                    buttonKey={btn.key}
-                    position={pos}
-                    src={btn.src}
-                    hoverSrc={btn.src.replace(/\.png$/, '_hover.png')}
-                    wallType={wall.type}
-                    setHoveredObject={setHoveredObject}
-                    hoveredObject={hoveredObject}
-                    controlsRef={buttonRef}
-                    setSelectedButton={setSelectedButton}
-                    animateCamera={animateCamera}
-                    btnIdx={idx}
-                    btnTotal={total}
-                  />
-                );
+                z = 0.10; // 두 번째
+              } else if (wall.type === 'back' && btn.key === 'btn_w_sun') {
+                z = 0.05; // 세 번째
+              } else if (wall.type === 'back' && btn.key === 'btn_w_walk') {
+                z = 0.01; // 가장 뒤로
+              } else if (wall.type === 'right' && btn.key === 'btn_h_home') {
+                z = 0.01; // btn_h_home은 가장 뒤로
               } else {
                 let baseZ = 0.01;
-                if (wall.type === 'ceiling') baseZ = -0.05;
-                else if (wall.type === 'floor') baseZ = 0.05;
-                else if (wall.type === 'front' && btn.src.includes('btn_p_go')) baseZ = 0.02;
-                z = baseZ + idx * 0.01;
+                if (wall.type === 'front' && btn.src.includes('btn_p_go')) baseZ = 0.02;
+                if (wall.type === 'right' && btn.key === 'btn_h_home') {
+                  z = 0.01; // btn_h_home은 가장 뒤로
+                } else {
+                  z = baseZ + idx * 0.01;
+                }
                 pos = [0, 0, z];
               }
               
@@ -551,12 +463,12 @@ const Room = ({
                 />
               );
             })}
-              </group>
-            ))}
           </group>
-        </>
-      );
-    };
+        ))}
+      </group>
+    </>
+  );
+};
 
 export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -721,15 +633,15 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
             target={INITIAL_CAMERA_LOOKAT}
           />
           <Suspense fallback={null}>
-        <Room
-          isHovered={isHovered}
-          setIsHovered={setIsHovered}
-          buttonRef={buttonRef}
-          setHoveredObject={setHoveredObject}
-          hoveredObject={hoveredObject}
-          setSelectedButton={setSelectedButton}
-          animateCamera={animateCamera}
-        />
+            <Room
+              isHovered={isHovered}
+              setIsHovered={setIsHovered}
+              buttonRef={buttonRef}
+              setHoveredObject={setHoveredObject}
+              hoveredObject={hoveredObject}
+              setSelectedButton={setSelectedButton}
+              animateCamera={animateCamera}
+            />
           </Suspense>
           <EffectComposer>
             <Outline
@@ -740,7 +652,7 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
               blur
             />
           </EffectComposer>
-      </Canvas>
+        </Canvas>
       </div>
 
       {selectedButton && (

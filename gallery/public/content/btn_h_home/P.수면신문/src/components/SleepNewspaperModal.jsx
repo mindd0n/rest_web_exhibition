@@ -3,6 +3,17 @@ import Magnifier from './Magnifier';
 import newspaperImage from '../assets/IMG_0853.PNG';
 
 const SleepNewspaperModal = ({ onClose }) => {
+  const handleClose = () => {
+    // 부모 창에 메시지 전송
+    if (window.parent) {
+      window.parent.postMessage('closeNewspaper', '*');
+    }
+    // 기존 onClose도 호출 (안전장치)
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -18,7 +29,7 @@ const SleepNewspaperModal = ({ onClose }) => {
       <div style={{ position: 'relative' }}>
         <Magnifier src={newspaperImage} />
         <button
-          onClick={onClose}
+          onClick={handleClose}
           style={{
             position: 'absolute',
             top: 10,
