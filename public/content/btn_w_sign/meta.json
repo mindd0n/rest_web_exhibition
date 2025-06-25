@@ -1,3 +1,10 @@
 {
+<<<<<<< HEAD
   "src": "/assets/deploy_media/sign_image.jpg"
+=======
+  "title": "표지판",
+  "type": "image",
+  "src": "sign_image.jpg",
+  "description": "산책로의 표지판 이미지"
+>>>>>>> main
 } 

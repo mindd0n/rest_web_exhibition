@@ -1,5 +1,9 @@
 {
   "title": "강아지",
   "type": "image",
+<<<<<<< HEAD
   "src": "/assets/deploy_media/dog.jpg"
+=======
+  "src": "dog.jpg"
+>>>>>>> main
 } 

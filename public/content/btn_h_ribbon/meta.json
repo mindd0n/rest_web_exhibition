@@ -1,3 +1,10 @@
 {
+<<<<<<< HEAD
   "src": "/assets/deploy_media/ribbon_image.jpg"
+=======
+  "title": "리본",
+  "type": "image",
+  "src": "ribbon_image.jpg",
+  "description": "집 벽의 리본 이미지"
+>>>>>>> main
 } 

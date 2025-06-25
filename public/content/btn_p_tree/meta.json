@@ -1,3 +1,10 @@
 {
+<<<<<<< HEAD
   "src": "/assets/deploy_media/tree_image.jpg"
+=======
+  "title": "Tree 버튼",
+  "type": "image",
+  "src": "tree_image.jpg",
+  "description": "Tree 버튼 관련 이미지"
+>>>>>>> main
 } 

@@ -1,3 +1,10 @@
 {
+<<<<<<< HEAD
   "src": "/assets/deploy_media/walk_image.jpg"
+=======
+  "title": "산책",
+  "type": "image",
+  "src": "walk_image.jpg",
+  "description": "산책 이미지"
+>>>>>>> main
 } 

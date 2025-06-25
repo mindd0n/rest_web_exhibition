@@ -1,3 +1,10 @@
 {
+<<<<<<< HEAD
   "src": "/assets/deploy_media/bus_image.jpg"
+=======
+  "title": "버스",
+  "type": "image",
+  "src": "bus_image.jpg",
+  "description": "버스정류장 벽의 버스 이미지"
+>>>>>>> main
 } 

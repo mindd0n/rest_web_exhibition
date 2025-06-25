@@ -3,7 +3,14 @@ import { Canvas } from '@react-three/fiber';
 import InteractiveGoButton from './InteractiveGoButton.jsx';
 import PavilionContent from './content/PavilionContent.jsx';
 import HomeContent from './content/HomeContent.jsx';
+<<<<<<< HEAD
 import './ContentDisplay.css';
+=======
+import DiaryContent from './content/DiaryContent.jsx';
+
+// S3 기본 URL
+const S3_BASE_URL = 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media';
+>>>>>>> main
 
 // 비디오 팝업 컴포넌트
 const VideoPopup = ({ videoSrc, onClose }) => {
@@ -32,7 +39,11 @@ const VideoPopup = ({ videoSrc, onClose }) => {
           maxHeight: '800px',
         }}
         onClick={(e) => e.stopPropagation()}
+<<<<<<< HEAD
       >
+=======
+      >ㅈ
+>>>>>>> main
         <button
           onClick={onClose}
           style={{
@@ -79,6 +90,7 @@ const ContentMap = {
   // Home
   'btn_h_dog': { type: 'iframe', src: '/content/btn_h_dog/S.hoya-story/dist/index.html' },
   'btn_h_star': { type: 'custom' },
+<<<<<<< HEAD
   'btn_h_ribbon': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/R.mp4' },
   'btn_h_home': { type: 'custom' },
 
@@ -91,11 +103,29 @@ const ContentMap = {
   'btn_w_walk': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/L.mp4' },
   'btn_w_bridge': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/M.mp4' },
   'btn_w_sign': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/N.mp4' },
+=======
+  'btn_h_ribbon': { type: 'video', src: `${S3_BASE_URL}/R.mp4` },
+  'btn_h_home': { type: 'custom' },
+
+  // Bus-stop
+  'btn_b_bus': { type: 'video', src: `${S3_BASE_URL}/i.mp4` },
+  'btn_b_busstop': { type: 'video', src: `${S3_BASE_URL}/H.mp4` },
+  'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/index.html' },
+  
+  // Walk
+  'btn_w_walk': { type: 'video', src: `${S3_BASE_URL}/L.mp4` },
+  'btn_w_bridge': { type: 'video', src: `${S3_BASE_URL}/M.mp4` },
+  'btn_w_sign': { type: 'video', src: `${S3_BASE_URL}/N.mp4` },
+>>>>>>> main
   'btn_w_sun': { type: 'custom' },
 
   // Ceiling
   'btn_c_lamp': { type: 'iframe', src: null },
+<<<<<<< HEAD
   'btn_c_heart': { type: 'image', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/U.PNG' },
+=======
+  'btn_c_heart': { type: 'image', src: `${S3_BASE_URL}/U.PNG` },
+>>>>>>> main
 
   // Floor
   'btn_f_rug': { type: 'iframe', src: '/content/btn_f_rug/%EC%B0%B8%EC%97%AC%ED%98%95%20%ED%8E%98%EC%9D%B4%EC%A7%80/index.html' },
@@ -108,21 +138,33 @@ const TreeContent = () => {
       <div style={{ flex: 2, minHeight: 0 }}>
         <GenericContent 
           type='video' 
+<<<<<<< HEAD
           src='https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/C.mp4' 
+=======
+          src={`${S3_BASE_URL}/C.mp4`}
+>>>>>>> main
         />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'row', gap: '1px', minHeight: 0 }}>
         <div style={{ flex: 2, minHeight: 0 }}>
           <GenericContent 
             type='image'
+<<<<<<< HEAD
             src='https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/D.JPG'
+=======
+            src={`${S3_BASE_URL}/D.JPG`}
+>>>>>>> main
             objectFit='cover'
           />
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
           <GenericContent 
             type='image'
+<<<<<<< HEAD
             src='https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/E.JPG'
+=======
+            src={`${S3_BASE_URL}/E.JPG`}
+>>>>>>> main
             objectFit='cover'
           />
         </div>
@@ -133,21 +175,38 @@ const TreeContent = () => {
 
 const StarContent = () => {
   console.log('StarContent rendering');
+<<<<<<< HEAD
+=======
+  
+  const [galleryReady, setGalleryReady] = useState(false);
+>>>>>>> main
 
   useEffect(() => {
     // 컴포넌트가 마운트되면 바로 갤러리 준비
     setTimeout(() => {
       const section = document.getElementById("gallery");
       section?.scrollIntoView({ behavior: "smooth" });
+<<<<<<< HEAD
+=======
+      setGalleryReady(true);
+>>>>>>> main
     }, 100);
   }, []);
 
   const images = [
+<<<<<<< HEAD
     "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/1.jpeg",
     "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/2.JPEG",
     "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/3.JPEG",
     "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/4.JPEG",
     "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/5.JPEG",
+=======
+    `${S3_BASE_URL}/1.jpeg`,
+    `${S3_BASE_URL}/2.JPEG`,
+    `${S3_BASE_URL}/3.JPEG`,
+    `${S3_BASE_URL}/4.JPEG`,
+    `${S3_BASE_URL}/5.JPEG`,
+>>>>>>> main
   ];
 
   return (
@@ -211,7 +270,11 @@ const SunContent = () => {
       {/* 메인 이미지 */}
       <img 
         src="/content/btn_w_sun/k.PNG" 
+<<<<<<< HEAD
         alt="Sun"
+=======
+        alt="Sun Image"
+>>>>>>> main
         className="sun-main-image"
         style={{
           width: '120%',
@@ -245,7 +308,10 @@ const SunContent = () => {
           allowFullScreen="" 
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
           loading="lazy"
+<<<<<<< HEAD
           title="Spotify Playlist"
+=======
+>>>>>>> main
         />
       </div>
       
@@ -309,18 +375,63 @@ const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
             zIndex: 15,
             position: 'relative'
           }} 
+<<<<<<< HEAD
           title="Content" 
+=======
+          title="content" 
+>>>>>>> main
         />
       );
     case 'image':
       return (
+<<<<<<< HEAD
         <img src={src} style={{ ...baseStyle, objectFit: objectFit }} alt="Content" />
+=======
+        <img src={src} style={{ ...baseStyle, objectFit: objectFit }} alt="content" />
+>>>>>>> main
       );
     default:
       return <div>Unsupported content type</div>;
   }
 };
 
+<<<<<<< HEAD
+=======
+const CustomContent = ({ buttonId, onClose }) => {
+  const info = ContentMap[buttonId];
+  if (!info) return <div>Unknown custom content: {buttonId}</div>;
+  if (buttonId === 'btn_c_heart') {
+    return (
+      <img
+        src="/content/btn_c_heart/U.PNG"
+        alt="하트 이미지"
+        style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
+      />
+    );
+  }
+  if (info.type === 'iframe' && info.src) {
+    return (
+      <iframe
+        src={info.src}
+        style={{ width: '100%', height: '100%', border: 'none', background: 'white' }}
+        title={buttonId}
+      />
+    );
+  }
+  if (info.type === 'image' && info.src) {
+    return (
+      <img
+        src={info.src}
+        alt={buttonId}
+        style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
+      />
+    );
+  }
+  // fallback
+  return null;
+};
+
+>>>>>>> main
 const ContentDisplay = ({ buttonId, onClose }) => {
   const [show, setShow] = useState(false);
   const [showVideoA, setShowVideoA] = useState(false);
@@ -376,6 +487,45 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           cursor: 'default',
         }}
       >
+<<<<<<< HEAD
+=======
+        {/* btn_f_rug 전체화면 + 돌아가기 버튼 */}
+        {buttonId === 'btn_f_rug' ? (
+          <div style={{position:'relative',width:'100vw',height:'100vh',background:'transparent'}}>
+            <div
+              style={{
+                position: 'absolute',
+                top: 24,
+                left: 32,
+                zIndex: 1001,
+                fontFamily: 'Pretendard, sans-serif',
+                fontSize: 18,
+                color: '#fff',
+                background: 'rgba(0,0,0,0.0)',
+                cursor: 'pointer',
+                userSelect: 'none',
+                letterSpacing: '-0.5px',
+              }}
+              onClick={onClose}
+            >
+              {'< 돌아가기'}
+            </div>
+            <iframe
+              src={ContentMap[buttonId].src}
+              style={{
+                width: '100vw',
+                height: '100vh',
+                border: 'none',
+                zIndex: 1000,
+                background: 'transparent',
+                display: 'block',
+              }}
+              title={buttonId}
+              allowFullScreen
+            />
+          </div>
+        ) : (
+>>>>>>> main
         <div
           onClick={handleContentClick}
           style={{
@@ -471,6 +621,7 @@ const ContentDisplay = ({ buttonId, onClose }) => {
                     title="diary"
                   />
                 );
+<<<<<<< HEAD
               } else if (buttonId === 'btn_f_rug') {
                 return (
                   <div style={{
@@ -543,6 +694,8 @@ const ContentDisplay = ({ buttonId, onClose }) => {
                     />
                   </div>
                 );
+=======
+>>>>>>> main
               } else if (buttonId === 'btn_f_phone') {
                 return (
                   <div style={{
@@ -664,18 +817,30 @@ const ContentDisplay = ({ buttonId, onClose }) => {
             }
           `}</style>
         </div>
+<<<<<<< HEAD
+=======
+        )}
+>>>>>>> main
       </div>
       
       {/* 비디오 팝업들 */}
       {showVideoA && (
         <VideoPopup
+<<<<<<< HEAD
           videoSrc="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/A.mp4"
+=======
+          videoSrc="/assets/deploy_media/L.mp4"
+>>>>>>> main
           onClose={() => setShowVideoA(false)}
         />
       )}
       {showVideoB && (
         <VideoPopup
+<<<<<<< HEAD
           videoSrc="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/B.mp4"
+=======
+          videoSrc="/assets/deploy_media/M.mp4"
+>>>>>>> main
           onClose={() => setShowVideoB(false)}
         />
       )}

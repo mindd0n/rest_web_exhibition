@@ -1,5 +1,9 @@
 {
   "title": "산책 가는 길",
   "type": "video",
+<<<<<<< HEAD
   "src": "/assets/deploy_media/video.mp4"
+=======
+  "src": "video.mp4"
+>>>>>>> main
 } 

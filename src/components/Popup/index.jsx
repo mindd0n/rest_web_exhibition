@@ -1,6 +1,12 @@
 import React from 'react';
 import './styles.css';
 
+<<<<<<< HEAD
+=======
+// S3 기본 URL
+const S3_BASE_URL = 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media';
+
+>>>>>>> main
 const Popup = ({ isOpen, onClose, buttonType }) => {
   if (!isOpen) return null;
 
@@ -85,6 +91,7 @@ const Popup = ({ isOpen, onClose, buttonType }) => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="popup-overlay" onClick={onClose} style={{position:'fixed', top:0, left:0, width:'100vw', height:'100vh', zIndex:20000, display:'flex', alignItems:'center', justifyContent:'center', background: 'rgba(0,0,0,0.7)'}}>
       <div 
         className="popup-container" 
@@ -135,6 +142,19 @@ const Popup = ({ isOpen, onClose, buttonType }) => {
           }}
           onClick={onClose}
         />
+=======
+    <div className="popup-overlay" onClick={onClose}>
+      <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-header">
+          <h2>{buttonType}</h2>
+          <button className="popup-close" onClick={onClose}>
+            <img src={`${S3_BASE_URL}/btn_back.png`} alt="닫기" />
+          </button>
+        </div>
+        <div className="popup-body">
+          {renderContent()}
+        </div>
+>>>>>>> main
       </div>
     </div>
   );
