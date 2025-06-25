@@ -12,6 +12,28 @@ import gsap from 'gsap';
 // 모바일 감지
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+// 모바일에서 더 낮은 해상도 설정
+const getMobileSettings = () => {
+  if (isMobile) {
+    return {
+      dpr: 1,
+      antialias: false,
+      powerPreference: 'low-power',
+      shadowMap: false,
+      pixelRatio: 1
+    };
+  }
+  return {
+    dpr: [1, 2],
+    antialias: true,
+    powerPreference: 'high-performance',
+    shadowMap: true,
+    pixelRatio: window.devicePixelRatio
+  };
+};
+
+const mobileSettings = getMobileSettings();
+
 // Room dimensions
 const roomHeight = 150;
 const roomWidth = 166.68; // 150 * 10 / 9
@@ -73,9 +95,9 @@ const Button = React.memo(function Button({
   }, [image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton, position]);
 
   const handlePointerMove = useCallback((e) => {
-    // 모바일에서 성능 최적화: throttling 적용
+    // 모바일에서 성능 최적화: 더 강한 throttling 적용
     const now = Date.now();
-    if (now - lastPointerMove.current < (isMobile ? 100 : 16)) return;
+    if (now - lastPointerMove.current < (isMobile ? 200 : 16)) return;
     lastPointerMove.current = now;
     
     if (!image || !texture || !canvas) return;
@@ -394,10 +416,12 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
         }}
       >
         <Canvas
-          dpr={isMobile ? [1, 1.5] : [1, 2]}
+          dpr={mobileSettings.dpr}
           gl={{
-            antialias: true,
-            powerPreference: isMobile ? 'default' : 'high-performance'
+            antialias: mobileSettings.antialias,
+            powerPreference: mobileSettings.powerPreference,
+            shadowMap: mobileSettings.shadowMap,
+            pixelRatio: mobileSettings.pixelRatio
           }}
           camera={{ 
               position: INITIAL_CAMERA_POSITION,
@@ -416,8 +440,11 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
             minDistance={minDistance}
             maxDistance={maxDistance}
             target={INITIAL_CAMERA_LOOKAT}
-            enableDamping={true}
+            enableDamping={!isMobile}
             dampingFactor={0.05}
+            rotateSpeed={isMobile ? 0.5 : 1}
+            zoomSpeed={isMobile ? 0.5 : 1}
+            panSpeed={isMobile ? 0.5 : 1}
           />
           <Suspense fallback={null}>
             <Room
@@ -432,10 +459,10 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
             <EffectComposer>
               <Outline
                 selection={hoveredObject && buttonRef.current ? [buttonRef.current.getObjectByName(hoveredObject)].filter(Boolean) : []}
-                edgeStrength={isMobile ? 50 : 100}
+                edgeStrength={mobileSettings.antialias ? 50 : 100}
                 visibleEdgeColor={0x00ff00}
                 hiddenEdgeColor={0x00ff00}
-                blur={!isMobile}
+                blur={!mobileSettings.antialias}
               />
             </EffectComposer>
           </Suspense>
