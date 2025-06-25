@@ -24,17 +24,17 @@ const DiaryModal = ({ onClose }) => {
       position: 'relative'
     }}>
       <button className="back-button" onClick={onClose}>Back</button>
-      <HTMLFlipBook
+     <HTMLFlipBook
         width={width}
         height={height}
-        size="fixed"
-        showCover={false}
+  size="fixed"
+  showCover={false}
         maxShadowOpacity={0}
-        className="custom-book"
-        flippingTime={700}
-        usePortrait={false}
+  className="custom-book"
+  flippingTime={700}
+  usePortrait={false}
         drawShadow={false}
-      >
+>
         {pages.map((num) => (
           <div key={num} className="page" style={{width: '50%', height: '100%'}}>
             <img src={`images/${num}.jpg`} alt={`page${num}`} style={{height: '100%', width: '100%', objectFit: 'contain'}} />
