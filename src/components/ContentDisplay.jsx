@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import InteractiveGoButton from './InteractiveGoButton.jsx';
 import PavilionContent from './content/PavilionContent.jsx';
 import HomeContent from './content/HomeContent.jsx';
+import DiaryContent from './content/DiaryContent.jsx';
 
 // 비디오 팝업 컴포넌트
 const VideoPopup = ({ videoSrc, onClose }) => {
@@ -71,7 +72,7 @@ const VideoPopup = ({ videoSrc, onClose }) => {
 const ContentMap = {
   // Pavilion
   'btn_p_pavilion': { type: 'custom' },
-  'btn_p_note': { type: 'iframe', src: '/cocooon-gallery/dist/index.html' },
+  'btn_p_note': { type: 'iframe', src: '/content/btn_p_note/dist/index.html' },
   'btn_p_tree': { type: 'custom' },
   'btn_p_go': { type: 'custom' },
 
@@ -354,6 +355,38 @@ const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
   }
 };
 
+const CustomContent = ({ buttonId, onClose }) => {
+  switch (buttonId) {
+    case 'btn_p_pavilion':
+      return <PavilionContent />;
+    case 'btn_p_tree':
+      return <TreeContent />;
+    case 'btn_p_go':
+      return <InteractiveGoButton onClose={onClose} />;
+    case 'btn_h_star':
+      return <StarContent />;
+    case 'btn_w_sun':
+      return <SunContent />;
+    case 'btn_p_note':
+      return (
+        <iframe
+          src={ContentMap[buttonId].src}
+          style={{
+            width: '100%',
+            height: '100%',
+            border: 'none',
+            zIndex: 10,
+            position: 'relative',
+            background: 'transparent'
+          }}
+          title="diary"
+        />
+      );
+    default:
+      return <div>Unknown custom content: {buttonId}</div>;
+  }
+};
+
 const ContentDisplay = ({ buttonId, onClose }) => {
   const [show, setShow] = useState(false);
   const [showVideoA, setShowVideoA] = useState(false);
@@ -413,11 +446,14 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           onClick={handleContentClick}
           style={{
             position: 'relative',
-            width: buttonId === 'btn_p_note' ? '90vw' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '90vw' : 'auto'),
-            height: buttonId === 'btn_p_note' ? '80vh' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '80vh' : 'auto'),
-            maxWidth: buttonId === 'btn_p_note' ? '1200px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '1200px' : '98vw'),
-            maxHeight: buttonId === 'btn_p_note' ? '800px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '800px' : '98vh'),
-            backgroundColor: buttonId === 'btn_p_note' ? '#000' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? 'rgba(0, 0, 0, 0.95)' : 'transparent'),
+            width: buttonId === 'btn_p_note' ? 'min(1200px, 99vw)' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '90vw' : 'auto'),
+            height: buttonId === 'btn_p_note' ? 'min(800px, 90vh)' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '80vh' : 'auto'),
+            maxWidth: buttonId === 'btn_p_note' ? undefined : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '1200px' : '98vw'),
+            maxHeight: buttonId === 'btn_p_note' ? undefined : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '800px' : '98vh'),
+            backgroundColor: buttonId === 'btn_p_note' ? 'transparent' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? 'rgba(0, 0, 0, 0.95)' : 'transparent'),
+            backgroundImage: buttonId === 'btn_p_note' ? 'url(/content/popup/popup_bg.png)' : undefined,
+            backgroundSize: buttonId === 'btn_p_note' ? 'cover' : undefined,
+            backgroundPosition: buttonId === 'btn_p_note' ? 'center' : undefined,
             borderRadius: buttonId === 'btn_p_note' ? '8px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '8px' : '0'),
           }}
         >
@@ -486,6 +522,21 @@ const ContentDisplay = ({ buttonId, onClose }) => {
                 return <StarContent />;
               } else if (buttonId === 'btn_w_sun') {
                 return <SunContent />;
+              } else if (buttonId === 'btn_p_note') {
+                return (
+                  <iframe
+                    src={ContentMap[buttonId].src}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      zIndex: 10,
+                      position: 'relative',
+                      background: 'transparent'
+                    }}
+                    title="diary"
+                  />
+                );
               } else {
                 return <GenericContent type={contentInfo.type} src={contentInfo.src} onClose={onClose} />;
               }
