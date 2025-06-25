@@ -9,14 +9,6 @@ import { useButtonImageData } from '../hooks/useButtonImageData';
 import ContentDisplay from './ContentDisplay.jsx';
 import gsap from 'gsap';
 
-// 버튼 위치 계산 함수 (예시)
-function getButtonPosition(wallType, buttonKey, index, total) {
-  const gap = 20;
-  const baseY = 0;
-  const baseZ = 0.1;
-  return [index * gap - (total - 1) * gap / 2, baseY, baseZ];
-}
-
 // Room dimensions
 const roomHeight = 150;
 const roomWidth = 166.68; // 150 * 10 / 9
