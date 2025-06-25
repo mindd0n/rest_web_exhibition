@@ -25,7 +25,7 @@ const INITIAL_CAMERA_POSITION = new THREE.Vector3(0, viewerHeight, roomDepth / 2
 const INITIAL_CAMERA_LOOKAT = new THREE.Vector3(0, 0, 0);
 const INITIAL_CAMERA_FOV = 75;
 
-// Button 컴포넌트 수정
+// Button 컴포넌트 수정 - 이벤트 최적화
 const Button = React.memo(function Button({ 
   type, 
   position, 
@@ -44,55 +44,43 @@ const Button = React.memo(function Button({
   const isHovered = hoveredObject === buttonKey;
   const [size, texture, image, canvas, ready] = useButtonImageData(isHovered ? hoverSrc : src, wallType);
   const meshRef = useRef();
-  const lastPointerMove = useRef(0);
+  const [isHoverable, setIsHoverable] = useState(false);
+  
+  // 알파 채널 체크를 한 번만 수행하고 캐싱
+  useEffect(() => {
+    if (image && texture && canvas) {
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const centerX = Math.floor(image.naturalWidth / 2);
+      const centerY = Math.floor(image.naturalHeight / 2);
+      const alpha = ctx.getImageData(centerX, centerY, 1, 1).data[3] / 255;
+      setIsHoverable(alpha > 0.05);
+    }
+  }, [image, texture, canvas]);
   
   const handleClick = useCallback((e) => {
     console.log(`벽면 버튼 클릭: ${buttonKey}`);
-    if (!image || !texture || !canvas) return;
-    const uv = e.uv;
-    if (!uv) return;
-    const x = Math.floor(uv.x * image.naturalWidth);
-    const y = Math.floor((1 - uv.y) * image.naturalHeight);
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const alpha = ctx.getImageData(x, y, 1, 1).data[3] / 255;
-    if (alpha > 0.05) {
-      e.stopPropagation();
-      const zoomTarget = getZoomTargetForButton(position, wallType);
-      animateCamera(
-        {
-          position: zoomTarget.position,
-          target: zoomTarget.target,
-          fov: 45
-        },
-        1.5,
-        () => setSelectedButton(buttonKey)
-      );
-      setHoveredObject(null);
-    }
-  }, [image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton, position]);
+    if (!isHoverable) return;
+    e.stopPropagation();
+    const zoomTarget = getZoomTargetForButton(position, wallType);
+    animateCamera(
+      {
+        position: zoomTarget.position,
+        target: zoomTarget.target,
+        fov: 45
+      },
+      1.5,
+      () => setSelectedButton(buttonKey)
+    );
+    setHoveredObject(null);
+  }, [isHoverable, buttonKey, position, wallType, animateCamera, setSelectedButton, setHoveredObject]);
 
-  const handlePointerMove = useCallback((e) => {
-    // 모바일에서 성능 최적화: 더 강한 throttling 적용
-    const now = Date.now();
-    if (now - lastPointerMove.current < (isMobile ? 200 : 16)) return;
-    lastPointerMove.current = now;
-    
-    if (!image || !texture || !canvas) return;
-    const uv = e.uv;
-    if (!uv) return;
-    const x = Math.floor(uv.x * image.naturalWidth);
-    const y = Math.floor((1 - uv.y) * image.naturalHeight);
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const alpha = ctx.getImageData(x, y, 1, 1).data[3] / 255;
-    if (alpha > 0.05 && hoveredObject !== buttonKey) {
-      e.stopPropagation();
-      setHoveredObject(buttonKey);
-    } else if (alpha <= 0.05 && hoveredObject === buttonKey) {
-      setHoveredObject(null);
-    }
-  }, [image, texture, canvas, hoveredObject, buttonKey, setHoveredObject]);
+  const handlePointerEnter = useCallback((e) => {
+    if (!isHoverable || hoveredObject === buttonKey) return;
+    e.stopPropagation();
+    setHoveredObject(buttonKey);
+  }, [isHoverable, hoveredObject, buttonKey, setHoveredObject]);
 
-  const handlePointerOut = useCallback(() => {
+  const handlePointerLeave = useCallback(() => {
     if (hoveredObject === buttonKey) {
       setHoveredObject(null);
     }
@@ -106,8 +94,8 @@ const Button = React.memo(function Button({
       position={position}
       rotation={[0, 0, 0]}
       onClick={handleClick}
-      onPointerMove={handlePointerMove}
-      onPointerOut={handlePointerOut}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
     >
       <planeGeometry args={size} />
       <meshStandardMaterial
@@ -146,7 +134,8 @@ const Room = ({
   setHoveredObject, 
   hoveredObject, 
   setSelectedButton,
-  animateCamera
+  animateCamera,
+  loadingStage
 }) => {
   const wallTextures = useTexture({
     front: '/images/walls/wall_photo.png',
@@ -226,8 +215,8 @@ const Room = ({
                 side={THREE.FrontSide}
               />
             </mesh>
-            {/* 벽 중앙에 버튼 추가 - 천장과 바닥도 포함 */}
-            {wallButtonData[wall.type]?.map((btn, idx) => {
+            {/* 벽 중앙에 버튼 추가 - 지연 로딩 적용 */}
+            {loadingStage >= 1 && wallButtonData[wall.type]?.map((btn, idx) => {
               let z;
               let pos = [0, 0, 0];
               
@@ -298,24 +287,47 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
   const controlsRef = useRef();
   const [restoreView, setRestoreView] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(0); // 0: 벽만, 1: 버튼 로딩, 2: 완료
 
-  // 간단한 로딩 처리
+  // 바밍타이거 스타일 지연 로딩
   useEffect(() => {
     if (onLoadingProgress && !isLoaded) {
       setIsLoaded(true);
       
+      // 1단계: 기본 벽 로딩 (0-40%)
       let progress = 0;
-      const interval = setInterval(() => {
-        progress += 20;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-          if (onLoadingComplete) onLoadingComplete();
+      const stage1 = setInterval(() => {
+        progress += 8;
+        if (progress >= 40) {
+          clearInterval(stage1);
+          setLoadingStage(1);
+          
+          // 2단계: 버튼 로딩 (40-90%)
+          const stage2 = setInterval(() => {
+            progress += 5;
+            if (progress >= 90) {
+              clearInterval(stage2);
+              setLoadingStage(2);
+              
+              // 3단계: 완료 (90-100%)
+              const stage3 = setInterval(() => {
+                progress += 2;
+                if (progress >= 100) {
+                  clearInterval(stage3);
+                  if (onLoadingComplete) onLoadingComplete();
+                }
+                if (onLoadingProgress) onLoadingProgress(progress);
+              }, 100);
+            }
+            if (onLoadingProgress) onLoadingProgress(progress);
+          }, 200);
         }
         if (onLoadingProgress) onLoadingProgress(progress);
-      }, 200);
+      }, 100);
       
-      return () => clearInterval(interval);
+      return () => {
+        clearInterval(stage1);
+      };
     }
   }, [onLoadingProgress, onLoadingComplete, isLoaded]);
 
@@ -439,6 +451,7 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
               hoveredObject={hoveredObject}
               setSelectedButton={setSelectedButton}
               animateCamera={animateCamera}
+              loadingStage={loadingStage}
             />
           </Suspense>
         </Canvas>
