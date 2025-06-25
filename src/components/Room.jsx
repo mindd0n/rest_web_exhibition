@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState, useMemo, useCallback, Suspense } fr
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { EffectComposer, Outline } from '@react-three/postprocessing';
 import './styles.css';
 import { useTexture } from '@react-three/drei';
 import { useButtonImageData } from '../hooks/useButtonImageData';
@@ -11,28 +10,6 @@ import gsap from 'gsap';
 
 // 모바일 감지
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-// 모바일에서 더 낮은 해상도 설정
-const getMobileSettings = () => {
-  if (isMobile) {
-    return {
-      dpr: 1,
-      antialias: false,
-      powerPreference: 'low-power',
-      shadowMap: false,
-      pixelRatio: 1
-    };
-  }
-  return {
-    dpr: [1, 2],
-    antialias: true,
-    powerPreference: 'high-performance',
-    shadowMap: true,
-    pixelRatio: window.devicePixelRatio
-  };
-};
-
-const mobileSettings = getMobileSettings();
 
 // Room dimensions
 const roomHeight = 150;
