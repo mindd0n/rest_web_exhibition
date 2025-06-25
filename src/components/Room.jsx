@@ -393,21 +393,27 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
         }}
       >
         <Canvas
-          dpr={1}
+          dpr={isMobile ? [1, 1.5] : [1, 2]}
           gl={{
-            antialias: false,
-            powerPreference: 'low-power',
-            alpha: false,
+            antialias: true,
+            powerPreference: isMobile ? 'default' : 'high-performance',
+            alpha: true,
             depth: true,
-            stencil: false
+            stencil: false,
+            preserveDrawingBuffer: false
           }}
           camera={{ 
               position: INITIAL_CAMERA_POSITION,
               fov: INITIAL_CAMERA_FOV,
             }}
-          onCreated={({ camera }) => {
+          onCreated={({ camera, gl }) => {
             camera.lookAt(INITIAL_CAMERA_LOOKAT);
             camera.layers.enable(1);
+            
+            // 모바일에서 렌더링 품질 개선
+            if (isMobile) {
+              gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            }
           }}
         >
           <OrbitControls
@@ -418,10 +424,11 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
             minDistance={minDistance}
             maxDistance={maxDistance}
             target={INITIAL_CAMERA_LOOKAT}
-            enableDamping={false}
-            rotateSpeed={0.5}
-            zoomSpeed={0.5}
-            panSpeed={0.5}
+            enableDamping={true}
+            dampingFactor={0.05}
+            rotateSpeed={isMobile ? 0.7 : 1}
+            zoomSpeed={isMobile ? 0.7 : 1}
+            panSpeed={isMobile ? 0.7 : 1}
           />
           <Suspense fallback={null}>
             <Room
