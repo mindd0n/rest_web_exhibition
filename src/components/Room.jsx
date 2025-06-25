@@ -147,7 +147,8 @@ const Room = ({
   setHoveredObject, 
   hoveredObject, 
   setSelectedButton,
-  animateCamera
+  animateCamera,
+  loadingStage = 2
 }) => {
   const wallTextures = useTexture({
     front: '/images/walls/wall_photo.png',
@@ -228,7 +229,7 @@ const Room = ({
               />
             </mesh>
             {/* 벽 중앙에 버튼 추가 - 천장과 바닥도 포함 */}
-            {wallButtonData[wall.type]?.map((btn, idx) => {
+            {loadingStage >= 1 && wallButtonData[wall.type]?.map((btn, idx) => {
               let z;
               let pos = [0, 0, 0];
               
@@ -299,24 +300,45 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
   const controlsRef = useRef();
   const [restoreView, setRestoreView] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(0); // 0: 벽만, 1: 버튼, 2: 효과
 
-  // 텍스처 로딩 상태 추적 - 무한 렌더링 방지
+  // 점진적 로딩 구현
   useEffect(() => {
     if (onLoadingProgress && !isLoaded) {
       setIsLoaded(true);
-      // 간단한 로딩 시뮬레이션 (실제로는 텍스처 로딩 상태를 추적해야 함)
+      
+      // 1단계: 기본 벽 로딩 (0-50%)
       let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 20;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-          if (onLoadingComplete) onLoadingComplete();
+      const stage1 = setInterval(() => {
+        progress += 10;
+        if (progress >= 50) {
+          clearInterval(stage1);
+          setLoadingStage(1);
+          // 2단계: 버튼 로딩 (50-90%)
+          const stage2 = setInterval(() => {
+            progress += 8;
+            if (progress >= 90) {
+              clearInterval(stage2);
+              setLoadingStage(2);
+              // 3단계: 효과 로딩 (90-100%)
+              const stage3 = setInterval(() => {
+                progress += 5;
+                if (progress >= 100) {
+                  clearInterval(stage3);
+                  if (onLoadingComplete) onLoadingComplete();
+                }
+                if (onLoadingProgress) onLoadingProgress(progress);
+              }, 100);
+            }
+            if (onLoadingProgress) onLoadingProgress(progress);
+          }, 200);
         }
         if (onLoadingProgress) onLoadingProgress(progress);
       }, 300);
       
-      return () => clearInterval(interval);
+      return () => {
+        clearInterval(stage1);
+      };
     }
   }, [onLoadingProgress, onLoadingComplete, isLoaded]);
 
@@ -394,9 +416,10 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
         }}
       >
         <Canvas
+          dpr={isMobile ? [1, 1.5] : [1, 2]}
           gl={{
-            antialias: !isMobile, // 모바일에서는 antialias 비활성화
-            powerPreference: 'high-performance'
+            antialias: true,
+            powerPreference: isMobile ? 'default' : 'high-performance'
           }}
           camera={{ 
               position: INITIAL_CAMERA_POSITION,
@@ -415,10 +438,10 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
             minDistance={minDistance}
             maxDistance={maxDistance}
             target={INITIAL_CAMERA_LOOKAT}
-            enableDamping={!isMobile} // 모바일에서는 damping 비활성화
+            enableDamping={true}
             dampingFactor={0.05}
           />
-          <Suspense fallback={null}>
+          <Suspense fallback={<div style={{color: 'white', textAlign: 'center', fontSize: 24, position: 'absolute', top: '50%', left: 0, right: 0, zIndex: 10}}>전시장을 준비하고 있습니다...</div>}>
             <Room
               isHovered={isHovered}
               setIsHovered={setIsHovered}
@@ -427,16 +450,17 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
               hoveredObject={hoveredObject}
               setSelectedButton={setSelectedButton}
               animateCamera={animateCamera}
+              loadingStage={loadingStage}
             />
-            {/* 모바일에서는 EffectComposer 비활성화 */}
-            {!isMobile && (
+            {/* 점진적 효과 로딩 */}
+            {loadingStage >= 2 && (
               <EffectComposer>
                 <Outline
                   selection={hoveredObject && buttonRef.current ? [buttonRef.current.getObjectByName(hoveredObject)].filter(Boolean) : []}
-                  edgeStrength={100}
+                  edgeStrength={isMobile ? 50 : 100}
                   visibleEdgeColor={0x00ff00}
                   hiddenEdgeColor={0x00ff00}
-                  blur
+                  blur={!isMobile}
                 />
               </EffectComposer>
             )}
