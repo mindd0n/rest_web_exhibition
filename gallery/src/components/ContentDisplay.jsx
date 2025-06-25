@@ -635,3 +635,50 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           />
           
           <style jsx>{`
+            .back-button {
+              position: absolute;
+              right: 1%;
+              bottom: 8%;
+              width: 100px;
+              height: auto;
+              cursor: pointer;
+              z-index: 2;
+            }
+            
+            @media (max-width: 1024px) {
+              .back-button {
+                width: 80px;
+                right: 2%;
+                bottom: 6%;
+              }
+            }
+            
+            @media (max-width: 768px) {
+              .back-button {
+                width: 60px;
+                right: 3%;
+                bottom: 4%;
+              }
+            }
+          `}</style>
+        </div>
+      </div>
+      
+      {/* 비디오 팝업들 */}
+      {showVideoA && (
+        <VideoPopup
+          videoSrc="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/A.mp4"
+          onClose={() => setShowVideoA(false)}
+        />
+      )}
+      {showVideoB && (
+        <VideoPopup
+          videoSrc="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/B.mp4"
+          onClose={() => setShowVideoB(false)}
+        />
+      )}
+    </>
+  );
+};
+
+export default ContentDisplay;
