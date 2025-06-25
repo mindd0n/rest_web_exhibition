@@ -416,12 +416,13 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
         }}
       >
         <Canvas
-          dpr={mobileSettings.dpr}
+          dpr={1}
           gl={{
-            antialias: mobileSettings.antialias,
-            powerPreference: mobileSettings.powerPreference,
-            shadowMap: mobileSettings.shadowMap,
-            pixelRatio: mobileSettings.pixelRatio
+            antialias: false,
+            powerPreference: 'low-power',
+            alpha: false,
+            depth: true,
+            stencil: false
           }}
           camera={{ 
               position: INITIAL_CAMERA_POSITION,
@@ -440,11 +441,10 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
             minDistance={minDistance}
             maxDistance={maxDistance}
             target={INITIAL_CAMERA_LOOKAT}
-            enableDamping={!isMobile}
-            dampingFactor={0.05}
-            rotateSpeed={isMobile ? 0.5 : 1}
-            zoomSpeed={isMobile ? 0.5 : 1}
-            panSpeed={isMobile ? 0.5 : 1}
+            enableDamping={false}
+            rotateSpeed={0.5}
+            zoomSpeed={0.5}
+            panSpeed={0.5}
           />
           <Suspense fallback={null}>
             <Room
@@ -456,15 +456,6 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
               setSelectedButton={setSelectedButton}
               animateCamera={animateCamera}
             />
-            <EffectComposer>
-              <Outline
-                selection={hoveredObject && buttonRef.current ? [buttonRef.current.getObjectByName(hoveredObject)].filter(Boolean) : []}
-                edgeStrength={mobileSettings.antialias ? 50 : 100}
-                visibleEdgeColor={0x00ff00}
-                hiddenEdgeColor={0x00ff00}
-                blur={!mobileSettings.antialias}
-              />
-            </EffectComposer>
           </Suspense>
         </Canvas>
       </div>
