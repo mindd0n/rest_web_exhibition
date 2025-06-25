@@ -31,16 +31,6 @@ const INITIAL_CAMERA_POSITION = new THREE.Vector3(0, viewerHeight, roomDepth / 2
 const INITIAL_CAMERA_LOOKAT = new THREE.Vector3(0, 0, 0);
 const INITIAL_CAMERA_FOV = 75;
 
-// 텍스처 로더를 컴포넌트 외부로 이동
-const textureLoader = new THREE.TextureLoader();
-const textureSettings = {
-  minFilter: THREE.LinearFilter,
-  magFilter: THREE.LinearFilter,
-  format: THREE.RGBAFormat,
-  type: THREE.UnsignedByteType,
-  generateMipmaps: false
-};
-
 // Button 컴포넌트 수정
 const Button = React.memo(function Button({ 
   type, 
@@ -84,7 +74,7 @@ const Button = React.memo(function Button({
       );
       setHoveredObject(null);
     }
-  }, [image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton]);
+  }, [image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton, position]);
 
   const handlePointerMove = useCallback((e) => {
     if (!image || !texture || !canvas) return;
