@@ -22,6 +22,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Large media files (stored in S3)
+public/assets/deploy_media/
+public/content/*/node_modules/
+
 # Large media files (already uploaded to S3)
 /public/assets/deploy_media/*.mp4
 /public/assets/deploy_media/*.m4a
