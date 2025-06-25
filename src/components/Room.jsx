@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback, Suspense } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { Canvas, useThree, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { EffectComposer, Outline } from '@react-three/postprocessing';
@@ -9,6 +9,20 @@ import { useButtonImageData } from '../hooks/useButtonImageData';
 import ContentDisplay from './ContentDisplay.jsx';
 import InteractiveGoButton from './InteractiveGoButton.jsx';
 import gsap from 'gsap';
+
+// S3 기본 URL
+const S3_BASE_URL = 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media';
+
+// 로컬 경로를 S3 경로로 변환하는 함수
+const convertToS3Path = (localPath) => {
+  if (localPath.startsWith('http')) {
+    return localPath; // 이미 URL인 경우 그대로 반환
+  }
+  
+  // 로컬 경로에서 파일명 추출
+  const fileName = localPath.split('/').pop();
+  return `${S3_BASE_URL}/${fileName}`;
+};
 
 // 버튼 위치 계산 함수 (예시)
 function getButtonPosition(wallType, buttonKey, index, total) {
@@ -42,27 +56,14 @@ const INITIAL_CAMERA_POSITION = new THREE.Vector3(0, viewerHeight, roomDepth / 2
 const INITIAL_CAMERA_LOOKAT = new THREE.Vector3(0, 0, 0);
 const INITIAL_CAMERA_FOV = 75;
 
-// 텍스처 로더를 컴포넌트 외부로 이동
-const textureLoader = new THREE.TextureLoader();
-const textureSettings = {
-  minFilter: THREE.LinearFilter,
-  magFilter: THREE.LinearFilter,
-  format: THREE.RGBAFormat,
-  type: THREE.UnsignedByteType,
-  generateMipmaps: false
-};
-
-// 텍스처 로딩 함수
-const loadTexture = (path, uvTransform) => {
-  return textureLoader.load(path, texture => {
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 1);
-    Object.assign(texture, textureSettings);
-    if (uvTransform) {
-      texture.repeat.set(...uvTransform.repeat);
-      texture.offset.set(...uvTransform.offset);
-    }
-  });
+// 벽 텍스처 경로를 객체로 관리 (로컬 경로로 변경)
+const wallTexturePaths = {
+  front: '/images/walls/wall_photo.png',
+  back: '/images/walls/wall_walk.png',
+  left: '/images/walls/wall_bus-stop.png',
+  right: '/images/walls/wall_home.png',
+  ceiling: '/images/walls/wall_ceiling.png',
+  floor: '/images/walls/wall_floor.png',
 };
 
 // 버튼 centroid 픽셀 좌표 (이미지 크기: 2000x1800)
@@ -283,7 +284,7 @@ const Button = React.memo(function Button({
     >
       <planeGeometry args={size} />
       <meshStandardMaterial
-        map={texture}
+        {...(texture ? { map: texture } : { color: "#cccccc" })}
         transparent
         alphaTest={0.5}
         depthWrite={true}
@@ -342,14 +343,35 @@ const Room = ({
   setSelectedButton,
   animateCamera
 }) => {
-  const wallTextures = useTexture({
-    front: '/images/walls/wall_photo.png',
-    back: '/images/walls/wall_walk.png',
-    left: '/images/walls/wall_bus-stop.png',
-    right: '/images/walls/wall_home.png',
-    ceiling: '/images/walls/wall_ceiling.png',
-    floor: '/images/walls/wall_floor.png',
-  });
+  // 로컬 이미지는 crossOrigin 설정 제거
+  const frontTex = useLoader(THREE.TextureLoader, wallTexturePaths.front);
+  const backTex = useLoader(THREE.TextureLoader, wallTexturePaths.back);
+  const leftTex = useLoader(THREE.TextureLoader, wallTexturePaths.left);
+  const rightTex = useLoader(THREE.TextureLoader, wallTexturePaths.right);
+  const ceilingTex = useLoader(THREE.TextureLoader, wallTexturePaths.ceiling);
+  const floorTex = useLoader(THREE.TextureLoader, wallTexturePaths.floor);
+  
+  // 텍스처 로딩 상태 확인
+  useEffect(() => {
+    console.log('=== 텍스처 로딩 상태 확인 ===');
+    console.log('frontTex:', frontTex, 'loaded:', frontTex?.isTexture);
+    console.log('backTex:', backTex, 'loaded:', backTex?.isTexture);
+    console.log('leftTex:', leftTex, 'loaded:', leftTex?.isTexture);
+    console.log('rightTex:', rightTex, 'loaded:', rightTex?.isTexture);
+    console.log('ceilingTex:', ceilingTex, 'loaded:', ceilingTex?.isTexture);
+    console.log('floorTex:', floorTex, 'loaded:', floorTex?.isTexture);
+    console.log('=== 경로 확인 ===');
+    console.log('wallTexturePaths:', wallTexturePaths);
+  }, [frontTex, backTex, leftTex, rightTex, ceilingTex, floorTex]);
+
+  const wallTextures = {
+    front: frontTex,
+    back: backTex,
+    left: leftTex,
+    right: rightTex,
+    ceiling: ceilingTex,
+    floor: floorTex,
+  };
   
   // 모든 텍스처 로딩 후 콜백
   useEffect(() => {
@@ -357,40 +379,43 @@ const Room = ({
     manager.onLoad = () => {
       console.log('모든 텍스처 로딩 완료');
     };
+    manager.onError = (url) => {
+      console.error('텍스처 로딩 실패:', url);
+    };
   }, []);
 
   // wallButtonData를 컴포넌트 내부로 이동
   const wallButtonData = {
     'front': [
-      { key: 'btn_p_go',       src: '/images/buttons/wall_photo_btn/btn_p_go.png',       hoverSrc: '/images/buttons/wall_photo_btn/btn_p_go_hover.png' },
-      { key: 'btn_p_tree',     src: '/images/buttons/wall_photo_btn/btn_p_tree.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_tree_hover.png' },
-      { key: 'btn_p_note',     src: '/images/buttons/wall_photo_btn/btn_p_note.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_note_hover.png' },
-      { key: 'btn_p_pavilion', src: '/images/buttons/wall_photo_btn/btn_p_pavilion.png', hoverSrc: '/images/buttons/wall_photo_btn/btn_p_pavilion_hover.png' }
+      { key: 'btn_p_go',       src: `${S3_BASE_URL}/btn_p_go.png`,       hoverSrc: `${S3_BASE_URL}/btn_p_go_hover.png` },
+      { key: 'btn_p_tree',     src: `${S3_BASE_URL}/btn_p_tree.png`,     hoverSrc: `${S3_BASE_URL}/btn_p_tree_hover.png` },
+      { key: 'btn_p_note',     src: `${S3_BASE_URL}/btn_p_note.png`,     hoverSrc: `${S3_BASE_URL}/btn_p_note_hover.png` },
+      { key: 'btn_p_pavilion', src: `${S3_BASE_URL}/btn_p_pavilion.png`, hoverSrc: `${S3_BASE_URL}/btn_p_pavilion_hover.png` }
     ],
     'back': [
-      { key: 'btn_w_bridge', src: '/images/buttons/wall_walk_btn/btn_w_bridge.png', hoverSrc: '/images/buttons/wall_walk_btn/btn_w_bridge_hover.png' },
-      { key: 'btn_w_walk',   src: '/images/buttons/wall_walk_btn/btn_w_walk.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_walk_hover.png' },
-      { key: 'btn_w_sun',    src: '/images/buttons/wall_walk_btn/btn_w_sun.png',    hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sun_hover.png' },
-      { key: 'btn_w_sign',   src: '/images/buttons/wall_walk_btn/btn_w_sign.png',   hoverSrc: '/images/buttons/wall_walk_btn/btn_w_sign_hover.png' },
+      { key: 'btn_w_bridge', src: `${S3_BASE_URL}/btn_w_bridge.png`, hoverSrc: `${S3_BASE_URL}/btn_w_bridge_hover.png` },
+      { key: 'btn_w_walk',   src: `${S3_BASE_URL}/btn_w_walk.png`,   hoverSrc: `${S3_BASE_URL}/btn_w_walk_hover.png` },
+      { key: 'btn_w_sun',    src: `${S3_BASE_URL}/btn_w_sun.png`,    hoverSrc: `${S3_BASE_URL}/btn_w_sun_hover.png` },
+      { key: 'btn_w_sign',   src: `${S3_BASE_URL}/btn_w_sign.png`,   hoverSrc: `${S3_BASE_URL}/btn_w_sign_hover.png` },
     ],
     'left': [
-      { key: 'btn_b_busstop', src: '/images/buttons/wall_bus-stop_btn/btn_b_busstop.png', hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_busstop_hover.png' },
-      { key: 'btn_b_bus',     src: '/images/buttons/wall_bus-stop_btn/btn_b_bus.png',     hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_bus_hover.png' },
-      { key: 'btn_b_home',    src: '/images/buttons/wall_bus-stop_btn/btn_b_home.png',    hoverSrc: '/images/buttons/wall_bus-stop_btn/btn_b_home_hover.png' },
+      { key: 'btn_b_busstop', src: `${S3_BASE_URL}/btn_b_busstop.png`, hoverSrc: `${S3_BASE_URL}/btn_b_busstop_hover.png` },
+      { key: 'btn_b_bus',     src: `${S3_BASE_URL}/btn_b_bus.png`,     hoverSrc: `${S3_BASE_URL}/btn_b_bus_hover.png` },
+      { key: 'btn_b_home',    src: `${S3_BASE_URL}/btn_b_home.png`,    hoverSrc: `${S3_BASE_URL}/btn_b_home_hover.png` },
     ],
     'right': [
-      { key: 'btn_h_dog',    src: '/images/buttons/wall_home_btn/btn_h_dog.png',    hoverSrc: '/images/buttons/wall_home_btn/btn_h_dog_hover.png' },
-      { key: 'btn_h_ribbon', src: '/images/buttons/wall_home_btn/btn_h_ribbon.png', hoverSrc: '/images/buttons/wall_home_btn/btn_h_ribbon_hover.png' },
-      { key: 'btn_h_star',   src: '/images/buttons/wall_home_btn/btn_h_star.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_star_hover.png' },
-      { key: 'btn_h_home',   src: '/images/buttons/wall_home_btn/btn_h_home.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_home_hover.png' },
+      { key: 'btn_h_dog',    src: `${S3_BASE_URL}/btn_h_dog.png`,    hoverSrc: `${S3_BASE_URL}/btn_h_dog_hover.png` },
+      { key: 'btn_h_ribbon', src: `${S3_BASE_URL}/btn_h_ribbon.png`, hoverSrc: `${S3_BASE_URL}/btn_h_ribbon_hover.png` },
+      { key: 'btn_h_star',   src: `${S3_BASE_URL}/btn_h_star.png`,   hoverSrc: `${S3_BASE_URL}/btn_h_star_hover.png` },
+      { key: 'btn_h_home',   src: `${S3_BASE_URL}/btn_h_home.png`,   hoverSrc: `${S3_BASE_URL}/btn_h_home_hover.png` },
     ],
     'ceiling': [
-      { key: 'btn_c_lamp',   src: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png',   hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_lamp_hover.png' },
-      { key: 'btn_c_heart',  src: '/images/buttons/wall_ceiling_btn/btn_c_heart.png',  hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_heart_hover.png' },
+      { key: 'btn_c_lamp',   src: `${S3_BASE_URL}/btn_c_lamp.png`,   hoverSrc: `${S3_BASE_URL}/btn_c_lamp_hover.png` },
+      { key: 'btn_c_heart',  src: `${S3_BASE_URL}/btn_c_heart.png`,  hoverSrc: `${S3_BASE_URL}/btn_c_heart_hover.png` },
     ],
     'floor': [
-      { key: 'btn_f_rug',    src: '/images/buttons/wall_floor_btn/btn_f_rug.png',    hoverSrc: '/images/buttons/wall_floor_btn/btn_f_rug_hover.png' },
-      { key: 'btn_f_phone',  src: '/images/buttons/wall_floor_btn/btn_f_phone.png',  hoverSrc: '/images/buttons/wall_floor_btn/btn_f_phone_hover.png' },
+      { key: 'btn_f_rug',    src: `${S3_BASE_URL}/btn_f_rug.png`,    hoverSrc: `${S3_BASE_URL}/btn_f_rug_hover.png` },
+      { key: 'btn_f_phone',  src: `${S3_BASE_URL}/btn_f_phone.png`,  hoverSrc: `${S3_BASE_URL}/btn_f_phone_hover.png` },
     ],
   };
 
@@ -406,26 +431,27 @@ const Room = ({
   return (
     <>
       {/* 조명 추가 */}
-      <ambientLight intensity={1.5} color="#ffffff" />
-      <directionalLight position={[0, 100, 0]} intensity={1.0} />
-      <directionalLight position={[0, -100, 0]} intensity={0.3} />
+      <ambientLight intensity={2.0} color="#ffffff" />
+      <directionalLight position={[0, 100, 0]} intensity={1.5} />
+      <directionalLight position={[0, -100, 0]} intensity={0.5} />
+      <directionalLight position={[100, 0, 0]} intensity={0.8} />
+      <directionalLight position={[-100, 0, 0]} intensity={0.8} />
       {/* 벽과 기본 구조 */}
       <group ref={buttonRef}>
         {/* 벽들 */}
         {[
-          { pos: [0, 0, -roomDepth / 2], rot: [0, 0, 0], tex: wallTextures.front, type: 'front' },
-          { pos: [0, 0, roomDepth / 2], rot: [0, Math.PI, 0], tex: wallTextures.back, type: 'back' },
-          { pos: [-roomWidth / 2, 0, 0], rot: [0, Math.PI / 2, 0], tex: wallTextures.left, type: 'left' },
-          { pos: [roomWidth / 2, 0, 0], rot: [0, -Math.PI / 2, 0], tex: wallTextures.right, type: 'right' },
-          { pos: [0, roomHeight / 2, 0], rot: [Math.PI / 2, 0, 0], tex: wallTextures.ceiling, type: 'ceiling' },
-          { pos: [0, -roomHeight / 2, 0], rot: [-Math.PI / 2, 0, 0], tex: wallTextures.floor, type: 'floor' },
+          { pos: [0, 0, -roomDepth / 2], rot: [0, 0, 0], tex: frontTex, type: 'front' },
+          { pos: [0, 0, roomDepth / 2], rot: [0, Math.PI, 0], tex: backTex, type: 'back' },
+          { pos: [-roomWidth / 2, 0, 0], rot: [0, Math.PI / 2, 0], tex: leftTex, type: 'left' },
+          { pos: [roomWidth / 2, 0, 0], rot: [0, -Math.PI / 2, 0], tex: rightTex, type: 'right' },
+          { pos: [0, roomHeight / 2, 0], rot: [Math.PI / 2, 0, 0], tex: ceilingTex, type: 'ceiling' },
+          { pos: [0, -roomHeight / 2, 0], rot: [-Math.PI / 2, 0, 0], tex: floorTex, type: 'floor' },
         ].map((wall, i) => (
           <group key={i} position={wall.pos} rotation={wall.rot}>
             <mesh>
               <planeGeometry args={wall.type === 'ceiling' || wall.type === 'floor' ? [roomWidth, roomDepth] : [roomWidth, roomHeight]} />
               <meshStandardMaterial 
                 map={wall.tex}
-                color={wall.tex ? undefined : "#cccccc"}
                 roughness={0.7}
                 metalness={0.12}
                 side={THREE.FrontSide}
@@ -498,7 +524,7 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
   const [isHovered, setIsHovered] = useState(false);
   const buttonRef = useRef();
   const [outlineReady, setOutlineReady] = useState(false);
-  const [cursor, setCursor] = useState(`url(/images/cursor.png) 16 44, auto`);
+  const [cursor, setCursor] = useState(`url(${S3_BASE_URL}/cursor.png) 16 44, auto`);
   const [hoveredObject, setHoveredObject] = useState(null);
   const [selectedButton, setSelectedButton] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -627,7 +653,7 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
         style={{
           width: '100%',
           height: '100%',
-          cursor: isHovered ? `url('/images/cursor-click.png') 16 44, auto` : `url('/images/cursor.png') 16 44, auto`,
+          cursor: isHovered ? `url(${S3_BASE_URL}/cursor-click.png) 16 44, auto` : `url(${S3_BASE_URL}/cursor.png) 16 44, auto`,
           position: 'relative',
           zIndex: 1,
           pointerEvents: selectedButton ? 'none' : 'auto',

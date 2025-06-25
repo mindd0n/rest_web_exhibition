@@ -2,5 +2,6 @@
   "title": "핸드폰",
   "description": "소통을 위한 핸드폰",
   "type": "floor",
-  "position": "bottom"
+  "position": "bottom",
+  "src": "/assets/deploy_media/phone_image.jpg"
 } 

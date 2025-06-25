@@ -1,6 +1,9 @@
 import React from 'react';
 import './styles.css';
 
+// S3 기본 URL
+const S3_BASE_URL = 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media';
+
 const Popup = ({ isOpen, onClose, buttonType }) => {
   if (!isOpen) return null;
 
@@ -85,56 +88,17 @@ const Popup = ({ isOpen, onClose, buttonType }) => {
   };
 
   return (
-    <div className="popup-overlay" onClick={onClose} style={{position:'fixed', top:0, left:0, width:'100vw', height:'100vh', zIndex:20000, display:'flex', alignItems:'center', justifyContent:'center', background: 'rgba(0,0,0,0.7)'}}>
-      <div 
-        className="popup-container" 
-        onClick={e => e.stopPropagation()} 
-        style={{
-          position: 'relative',
-          width: '98vw',
-          maxWidth: '1600px',
-          maxHeight: '98vh',
-          aspectRatio: '10/9',
-        }}>
-        
-        <img 
-          src="/content/popup/popup_bg.png" 
-          alt="Popup UI" 
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-          onError={handleImageError} 
-        />
-
-        <div 
-          className="content-area"
-          style={{
-            position: 'absolute',
-            top: '10%',
-            left: '10%',
-            width: '80%',
-            height: '80%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 2,
-          }}>
+    <div className="popup-overlay" onClick={onClose}>
+      <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-header">
+          <h2>{buttonType}</h2>
+          <button className="popup-close" onClick={onClose}>
+            <img src={`${S3_BASE_URL}/btn_back.png`} alt="닫기" />
+          </button>
+        </div>
+        <div className="popup-body">
           {renderContent()}
         </div>
-        
-        <img 
-          src="/content/popup/btn_back.png" 
-          alt="Back button"
-          onError={handleImageError}
-          style={{
-            position:'absolute', 
-            right:'24%', 
-            bottom:'8%', 
-            width:'100px', 
-            height:'auto', 
-            cursor:'pointer',
-            zIndex: 3,
-          }}
-          onClick={onClose}
-        />
       </div>
     </div>
   );

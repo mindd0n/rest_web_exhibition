@@ -2,5 +2,6 @@
   "title": "램프",
   "description": "방을 밝게 비추는 천장 램프",
   "type": "ceiling",
-  "position": "top"
+  "position": "top",
+  "src": "/assets/deploy_media/lamp_image.jpg"
 } 

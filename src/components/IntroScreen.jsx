@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
+// S3 기본 URL
+const S3_BASE_URL = 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media';
+
 const IntroScreen = ({ onComplete }) => {
     const [videoSrc, setVideoSrc] = useState('');
     const [posterSrc, setPosterSrc] = useState('');
 
     useEffect(() => {
         const isMobile = window.innerWidth <= 768;
-        setVideoSrc(isMobile ? '/assets/intro_m.mp4' : '/deploy_videos/intro_pc.MP4');
-        setPosterSrc(isMobile ? '/assets/jpg_intro_m.jpg' : '/assets/jpg_intro_pc.jpg');
+        setVideoSrc(isMobile ? `${S3_BASE_URL}/intro_m.mp4` : `${S3_BASE_URL}/intro_pc.MP4`);
+        setPosterSrc(isMobile ? `${S3_BASE_URL}/jpg_intro_m.jpg` : `${S3_BASE_URL}/jpg_intro_pc.jpg`);
     }, []);
 
     return (
@@ -41,7 +44,7 @@ const IntroScreen = ({ onComplete }) => {
                     cursor: 'pointer',
                     width: '100px',
                     height: '50px',
-                    backgroundImage: "url('/assets/btn_skip.png')",
+                    backgroundImage: `url('${S3_BASE_URL}/btn_skip.png')`,
                     backgroundSize: 'contain',
                     backgroundRepeat: 'no-repeat',
                 }}
