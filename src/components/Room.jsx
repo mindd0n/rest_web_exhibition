@@ -198,15 +198,6 @@ const Room = ({
     ],
   }), []);
 
-  const buttons = useMemo(() => {
-    return Object.entries(wallButtonData).flatMap(([wallType, wallButtons]) => 
-      wallButtons.map((btn, index) => {
-        const position = getButtonPosition(wallType, btn.key, index, wallButtons.length);
-        return { ...btn, wallType, position, btnIdx: index, btnTotal: wallButtons.length };
-      })
-    );
-  }, [wallButtonData]);
-
   return (
     <>
       {/* 조명 추가 */}
