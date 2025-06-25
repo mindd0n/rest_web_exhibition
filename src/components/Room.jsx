@@ -9,6 +9,9 @@ import { useButtonImageData } from '../hooks/useButtonImageData';
 import ContentDisplay from './ContentDisplay.jsx';
 import gsap from 'gsap';
 
+// 모바일 감지
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 // Room dimensions
 const roomHeight = 150;
 const roomWidth = 166.68; // 150 * 10 / 9
@@ -42,6 +45,7 @@ const Button = React.memo(function Button({
   const isHovered = hoveredObject === buttonKey;
   const [size, texture, image, canvas, ready] = useButtonImageData(isHovered ? hoverSrc : src, wallType);
   const meshRef = useRef();
+  const lastPointerMove = useRef(0);
   
   const handleClick = useCallback((e) => {
     console.log(`벽면 버튼 클릭: ${buttonKey}`);
@@ -69,6 +73,11 @@ const Button = React.memo(function Button({
   }, [image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton, position]);
 
   const handlePointerMove = useCallback((e) => {
+    // 모바일에서 성능 최적화: throttling 적용
+    const now = Date.now();
+    if (now - lastPointerMove.current < (isMobile ? 100 : 16)) return;
+    lastPointerMove.current = now;
+    
     if (!image || !texture || !canvas) return;
     const uv = e.uv;
     if (!uv) return;
@@ -289,10 +298,12 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const controlsRef = useRef();
   const [restoreView, setRestoreView] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // 텍스처 로딩 상태 추적
+  // 텍스처 로딩 상태 추적 - 무한 렌더링 방지
   useEffect(() => {
-    if (onLoadingProgress) {
+    if (onLoadingProgress && !isLoaded) {
+      setIsLoaded(true);
       // 간단한 로딩 시뮬레이션 (실제로는 텍스처 로딩 상태를 추적해야 함)
       let progress = 0;
       const interval = setInterval(() => {
@@ -307,7 +318,7 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
       
       return () => clearInterval(interval);
     }
-  }, [onLoadingProgress, onLoadingComplete]);
+  }, [onLoadingProgress, onLoadingComplete, isLoaded]);
 
   // OrbitControls 기반 카메라 애니메이션
   const animateCamera = useCallback((to, duration = 1.5, onComplete) => {
@@ -384,7 +395,7 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
       >
         <Canvas
           gl={{
-            antialias: true,
+            antialias: !isMobile, // 모바일에서는 antialias 비활성화
             powerPreference: 'high-performance'
           }}
           camera={{ 
@@ -404,6 +415,8 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
             minDistance={minDistance}
             maxDistance={maxDistance}
             target={INITIAL_CAMERA_LOOKAT}
+            enableDamping={!isMobile} // 모바일에서는 damping 비활성화
+            dampingFactor={0.05}
           />
           <Suspense fallback={null}>
             <Room
@@ -415,15 +428,18 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
               setSelectedButton={setSelectedButton}
               animateCamera={animateCamera}
             />
-            <EffectComposer>
-              <Outline
-                selection={hoveredObject && buttonRef.current ? [buttonRef.current.getObjectByName(hoveredObject)].filter(Boolean) : []}
-                edgeStrength={100}
-                visibleEdgeColor={0x00ff00}
-                hiddenEdgeColor={0x00ff00}
-                blur
-              />
-            </EffectComposer>
+            {/* 모바일에서는 EffectComposer 비활성화 */}
+            {!isMobile && (
+              <EffectComposer>
+                <Outline
+                  selection={hoveredObject && buttonRef.current ? [buttonRef.current.getObjectByName(hoveredObject)].filter(Boolean) : []}
+                  edgeStrength={100}
+                  visibleEdgeColor={0x00ff00}
+                  hiddenEdgeColor={0x00ff00}
+                  blur
+                />
+              </EffectComposer>
+            )}
           </Suspense>
         </Canvas>
       </div>
