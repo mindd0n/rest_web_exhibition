@@ -92,6 +92,14 @@ const ContentMap = {
   'btn_w_bridge': { type: 'video', src: '/deploy_videos/M.mp4' },
   'btn_w_sign': { type: 'video', src: '/deploy_videos/N.mp4' },
   'btn_w_sun': { type: 'custom' },
+
+  // Ceiling
+  'btn_c_lamp': { type: 'iframe', src: null },
+  'btn_c_heart': { type: 'image', src: '/content/btn_c_heart/U.PNG' },
+
+  // Floor
+  'btn_f_rug': { type: 'iframe', src: '/content/btn_f_rug/%EC%B0%B8%EC%97%AC%ED%98%95%20%ED%8E%98%EC%9D%B4%EC%A7%80/index.html' },
+  'btn_f_phone': { type: 'iframe', src: '/content/btn_f_phone/V.%EB%94%94%EC%A7%80%ED%84%B8%EB%94%94%ED%86%A1%EC%8A%A4/index.html' },
 };
 
 const TreeContent = () => {
@@ -265,46 +273,6 @@ const SunContent = () => {
         .sun-playlist-iframe {
           border-radius: 12px;
         }
-        
-        @media (max-width: 1024px) {
-          .sun-main-image {
-            width: 110%;
-            height: 110%;
-            top: -20px;
-            left: -5%;
-          }
-          
-          .sun-playlist-container {
-            bottom: 20px;
-            right: -20px;
-            width: 180px;
-            height: 120px;
-          }
-          
-          .sun-playlist-iframe {
-            height: 120px;
-          }
-        }
-        
-        @media (max-width: 768px) {
-          .sun-main-image {
-            width: 100%;
-            height: 100%;
-            top: 0px;
-            left: 0px;
-          }
-          
-          .sun-playlist-container {
-            bottom: 5px;
-            right: -10px;
-            width: 140px;
-            height: 100px;
-          }
-          
-          .sun-playlist-iframe {
-            height: 100px;
-          }
-        }
       `}</style>
     </div>
   );
@@ -356,35 +324,37 @@ const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
 };
 
 const CustomContent = ({ buttonId, onClose }) => {
-  switch (buttonId) {
-    case 'btn_p_pavilion':
-      return <PavilionContent />;
-    case 'btn_p_tree':
-      return <TreeContent />;
-    case 'btn_p_go':
-      return <InteractiveGoButton onClose={onClose} />;
-    case 'btn_h_star':
-      return <StarContent />;
-    case 'btn_w_sun':
-      return <SunContent />;
-    case 'btn_p_note':
-      return (
-        <iframe
-          src={ContentMap[buttonId].src}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            zIndex: 10,
-            position: 'relative',
-            background: 'transparent'
-          }}
-          title="diary"
-        />
-      );
-    default:
-      return <div>Unknown custom content: {buttonId}</div>;
+  const info = ContentMap[buttonId];
+  if (!info) return <div>Unknown custom content: {buttonId}</div>;
+  if (buttonId === 'btn_c_heart') {
+    return (
+      <img
+        src="/content/btn_c_heart/U.PNG"
+        alt="하트 이미지"
+        style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
+      />
+    );
   }
+  if (info.type === 'iframe' && info.src) {
+    return (
+      <iframe
+        src={info.src}
+        style={{ width: '100%', height: '100%', border: 'none', background: 'white' }}
+        title={buttonId}
+      />
+    );
+  }
+  if (info.type === 'image' && info.src) {
+    return (
+      <img
+        src={info.src}
+        alt={buttonId}
+        style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
+      />
+    );
+  }
+  // fallback
+  return null;
 };
 
 const ContentDisplay = ({ buttonId, onClose }) => {
@@ -536,6 +506,93 @@ const ContentDisplay = ({ buttonId, onClose }) => {
                     }}
                     title="diary"
                   />
+                );
+              } else if (buttonId === 'btn_f_rug') {
+                return (
+                  <iframe
+                    src={ContentMap[buttonId].src}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      zIndex: 10,
+                      position: 'relative',
+                      background: 'transparent'
+                    }}
+                    title={buttonId}
+                  />
+                );
+              } else if (buttonId === 'btn_f_phone') {
+                return (
+                  <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    zIndex: 3000,
+                    background: 'black',
+                  }}>
+                    <button
+                      onClick={onClose}
+                      style={{
+                        position: 'absolute',
+                        top: '24px',
+                        left: '24px',
+                        zIndex: 3100,
+                        background: 'none',
+                        color: '#191F28',
+                        border: 'none',
+                        borderRadius: 0,
+                        fontSize: '18px',
+                        fontFamily: 'Pretendard, sans-serif',
+                        fontWeight: 300,
+                        padding: 0,
+                        boxShadow: 'none',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        lineHeight: 1,
+                      }}
+                      aria-label="돌아가기"
+                    >
+                      〈 돌아가기
+                    </button>
+                    <style jsx>{`
+                      @media (max-width: 768px) {
+                        button {
+                          top: 16px !important;
+                          left: 16px !important;
+                          font-size: 16px !important;
+                        }
+                      }
+                      @media (max-width: 480px) {
+                        button {
+                          top: 12px !important;
+                          left: 12px !important;
+                          font-size: 14px !important;
+                        }
+                      }
+                      @media (min-width: 1024px) {
+                        button {
+                          top: 32px !important;
+                          left: 32px !important;
+                          font-size: 20px !important;
+                        }
+                      }
+                    `}</style>
+                    <iframe
+                      src={ContentMap[buttonId].src}
+                      style={{
+                        width: '100vw',
+                        height: '100vh',
+                        border: 'none',
+                        background: 'white',
+                        zIndex: 3001,
+                        display: 'block',
+                      }}
+                      title={buttonId}
+                    />
+                  </div>
                 );
               } else {
                 return <GenericContent type={contentInfo.type} src={contentInfo.src} onClose={onClose} />;

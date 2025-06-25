@@ -259,6 +259,8 @@ const Button = React.memo(function Button({
     if (alpha > 0.05 && hoveredObject !== buttonKey) {
       e.stopPropagation(); // 그림 부분만 stopPropagation
       setHoveredObject(buttonKey);
+    } else if (alpha <= 0.05 && hoveredObject === buttonKey) {
+      setHoveredObject(null);
     }
   }, [position, image, texture, canvas, hoveredObject, buttonKey, setHoveredObject]);
 
@@ -284,7 +286,7 @@ const Button = React.memo(function Button({
         map={texture}
         transparent
         alphaTest={0.5}
-        depthWrite={false}
+        depthWrite={true}
       />
     </mesh>
   );
@@ -323,6 +325,8 @@ const getZoomTargetForButton = (position, wallType) => {
     case 'back': cameraPos = new THREE.Vector3(x, y, z - distance); break;
     case 'left': cameraPos = new THREE.Vector3(x + distance, y, z); break;
     case 'right': cameraPos = new THREE.Vector3(x - distance, y, z); break;
+    case 'ceiling': cameraPos = new THREE.Vector3(x, y - distance, z); break;
+    case 'floor': cameraPos = new THREE.Vector3(x, y + distance, z); break;
     default: cameraPos = new THREE.Vector3(x, y, z + distance);
   }
   return { position: cameraPos, target };
@@ -380,6 +384,14 @@ const Room = ({
       { key: 'btn_h_star',   src: '/images/buttons/wall_home_btn/btn_h_star.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_star_hover.png' },
       { key: 'btn_h_home',   src: '/images/buttons/wall_home_btn/btn_h_home.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_home_hover.png' },
     ],
+    'ceiling': [
+      { key: 'btn_c_lamp',   src: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png',   hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_lamp_hover.png' },
+      { key: 'btn_c_heart',  src: '/images/buttons/wall_ceiling_btn/btn_c_heart.png',  hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_heart_hover.png' },
+    ],
+    'floor': [
+      { key: 'btn_f_rug',    src: '/images/buttons/wall_floor_btn/btn_f_rug.png',    hoverSrc: '/images/buttons/wall_floor_btn/btn_f_rug_hover.png' },
+      { key: 'btn_f_phone',  src: '/images/buttons/wall_floor_btn/btn_f_phone.png',  hoverSrc: '/images/buttons/wall_floor_btn/btn_f_phone_hover.png' },
+    ],
   };
 
   const buttons = useMemo(() => {
@@ -419,11 +431,23 @@ const Room = ({
                 side={THREE.FrontSide}
               />
             </mesh>
-            {/* 벽 중앙에 버튼 추가 - 천장과 바닥은 제외 */}
-            {wall.type !== 'ceiling' && wall.type !== 'floor' && wallButtonData[wall.type]?.map((btn, idx) => {
+            {/* 벽 중앙에 버튼 추가 - 천장과 바닥도 포함 */}
+            {wallButtonData[wall.type]?.map((btn, idx) => {
               let z;
               let pos = [0, 0, 0];
-              if (wall.type === 'front' && btn.src.includes('btn_p_tree')) {
+              
+              // 천장 버튼 위치 조정
+              if (wall.type === 'ceiling') {
+                z = -0.1 - idx * 0.05; // 천장은 아래쪽으로 더 멀리, 인덱스별로 간격
+                pos = [0, 0, z];
+              }
+              // 바닥 버튼 위치 조정  
+              else if (wall.type === 'floor') {
+                z = 0.1 + idx * 0.05; // 바닥은 위쪽으로 더 멀리, 인덱스별로 간격
+                pos = [0, 0, z]; // 중앙에 그대로 배치
+              }
+              // 기존 벽 버튼들
+              else if (wall.type === 'front' && btn.src.includes('btn_p_tree')) {
                 z = -0.05;
               } else if (wall.type === 'back' && btn.key === 'btn_w_sign') {
                 z = 0.15; // Back 벽은 180도 회전되어 있어서 큰 숫자가 앞으로
