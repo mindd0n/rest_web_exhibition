@@ -1,15 +1,13 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import RoomScene from './components/Room';
 import IntroScreen from './components/IntroScreen.jsx';
 import LoadingScreen from './components/LoadingScreen';
 import RightBottomControls from './components/RightBottomControls';
-import { Canvas } from '@react-three/fiber';
 
 function App() {
-  const [showIntro, setShowIntro] = useState(false);
+  const [showIntro] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingMessage, setLoadingMessage] = useState("텍스처 로딩 중...");
 
   // 커서 동적 변경은 body에만 적용
   useEffect(() => {
@@ -29,13 +27,11 @@ function App() {
   }, []);
 
   const handleIntroComplete = () => {
-    console.log('인트로 완료, 텍스처 로딩 시작');
     setShowLoading(true);
     setLoadingProgress(0);
   };
 
   const handleLoadingComplete = () => {
-    console.log('텍스처 로딩 완료, 3D 룸으로 전환');
     setShowLoading(false);
   };
 
@@ -48,7 +44,7 @@ function App() {
   }
 
   if (showLoading) {
-    return <LoadingScreen progress={loadingProgress} message={loadingMessage} />;
+    return <LoadingScreen progress={loadingProgress} message="텍스처 로딩 중..." />;
   }
 
   return (

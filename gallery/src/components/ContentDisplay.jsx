@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import InteractiveGoButton from './InteractiveGoButton.jsx';
 import PavilionContent from './content/PavilionContent.jsx';
 import HomeContent from './content/HomeContent.jsx';
+import DiaryContent from './content/DiaryContent.jsx';
 
 // 비디오 팝업 컴포넌트
 const VideoPopup = ({ videoSrc, onClose }) => {
@@ -71,26 +72,34 @@ const VideoPopup = ({ videoSrc, onClose }) => {
 const ContentMap = {
   // Pavilion
   'btn_p_pavilion': { type: 'custom' },
-  'btn_p_note': { type: 'iframe', src: '/cocooon-gallery/dist/index.html' },
+  'btn_p_note': { type: 'iframe', src: '/content/btn_p_note/dist/index.html' },
   'btn_p_tree': { type: 'custom' },
   'btn_p_go': { type: 'custom' },
 
   // Home
   'btn_h_dog': { type: 'iframe', src: '/content/btn_h_dog/S.hoya-story/dist/index.html' },
   'btn_h_star': { type: 'custom' },
-  'btn_h_ribbon': { type: 'video', src: '/content/btn_h_ribbon/R.mp4' },
+  'btn_h_ribbon': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/R.mp4' },
   'btn_h_home': { type: 'custom' },
 
   // Bus-stop
-  'btn_b_bus': { type: 'video', src: '/deploy_videos/i.mp4' },
-  'btn_b_busstop': { type: 'video', src: '/deploy_videos/H.mp4' },
+  'btn_b_bus': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/i.mp4' },
+  'btn_b_busstop': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/H.mp4' },
   'btn_b_home': { type: 'iframe', src: '/content/btn_b_home/j/index.html' },
-
+  
   // Walk
-  'btn_w_walk': { type: 'video', src: '/deploy_videos/L.mp4' },
-  'btn_w_bridge': { type: 'video', src: '/deploy_videos/M.mp4' },
-  'btn_w_sign': { type: 'video', src: '/deploy_videos/N.mp4' },
+  'btn_w_walk': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/L.mp4' },
+  'btn_w_bridge': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/M.mp4' },
+  'btn_w_sign': { type: 'video', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/N.mp4' },
   'btn_w_sun': { type: 'custom' },
+
+  // Ceiling
+  'btn_c_lamp': { type: 'iframe', src: null },
+  'btn_c_heart': { type: 'image', src: 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/U.PNG' },
+
+  // Floor
+  'btn_f_rug': { type: 'iframe', src: '/content/btn_f_rug/%EC%B0%B8%EC%97%AC%ED%98%95%20%ED%8E%98%EC%9D%B4%EC%A7%80/index.html' },
+  'btn_f_phone': { type: 'iframe', src: '/content/btn_f_phone/V.%EB%94%94%EC%A7%80%ED%84%B8%EB%94%94%ED%86%A1%EC%8A%A4/index.html' },
 };
 
 const TreeContent = () => {
@@ -99,21 +108,21 @@ const TreeContent = () => {
       <div style={{ flex: 2, minHeight: 0 }}>
         <GenericContent 
           type='video' 
-          src='/content/btn_p_tree/C.mp4' 
+          src='https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/C.mp4' 
         />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'row', gap: '1px', minHeight: 0 }}>
         <div style={{ flex: 2, minHeight: 0 }}>
           <GenericContent 
             type='image'
-            src='/content/btn_p_tree/D.jpg'
+            src='https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/D.JPG'
             objectFit='cover'
           />
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
           <GenericContent 
             type='image'
-            src='/content/btn_p_tree/E.JPG'
+            src='https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/E.JPG'
             objectFit='cover'
           />
         </div>
@@ -124,24 +133,21 @@ const TreeContent = () => {
 
 const StarContent = () => {
   console.log('StarContent rendering');
-  
-  const [galleryReady, setGalleryReady] = useState(false);
 
   useEffect(() => {
     // 컴포넌트가 마운트되면 바로 갤러리 준비
     setTimeout(() => {
       const section = document.getElementById("gallery");
       section?.scrollIntoView({ behavior: "smooth" });
-      setGalleryReady(true);
     }, 100);
   }, []);
 
   const images = [
-    "/content/btn_h_star/T.cocooon-scroll-gallery/public/1.jpeg",
-    "/content/btn_h_star/T.cocooon-scroll-gallery/public/2.JPEG",
-    "/content/btn_h_star/T.cocooon-scroll-gallery/public/3.JPEG",
-    "/content/btn_h_star/T.cocooon-scroll-gallery/public/4.JPEG",
-    "/content/btn_h_star/T.cocooon-scroll-gallery/public/5.JPEG",
+    "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/1.jpeg",
+    "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/2.JPEG",
+    "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/3.JPEG",
+    "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/4.JPEG",
+    "https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/5.JPEG",
   ];
 
   return (
@@ -205,7 +211,7 @@ const SunContent = () => {
       {/* 메인 이미지 */}
       <img 
         src="/content/btn_w_sun/k.PNG" 
-        alt="Sun Image"
+        alt="Sun"
         className="sun-main-image"
         style={{
           width: '120%',
@@ -239,6 +245,7 @@ const SunContent = () => {
           allowFullScreen="" 
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
           loading="lazy"
+          title="Spotify Playlist"
         />
       </div>
       
@@ -263,46 +270,6 @@ const SunContent = () => {
         
         .sun-playlist-iframe {
           border-radius: 12px;
-        }
-        
-        @media (max-width: 1024px) {
-          .sun-main-image {
-            width: 110%;
-            height: 110%;
-            top: -20px;
-            left: -5%;
-          }
-          
-          .sun-playlist-container {
-            bottom: 20px;
-            right: -20px;
-            width: 180px;
-            height: 120px;
-          }
-          
-          .sun-playlist-iframe {
-            height: 120px;
-          }
-        }
-        
-        @media (max-width: 768px) {
-          .sun-main-image {
-            width: 100%;
-            height: 100%;
-            top: 0px;
-            left: 0px;
-          }
-          
-          .sun-playlist-container {
-            bottom: 5px;
-            right: -10px;
-            width: 140px;
-            height: 100px;
-          }
-          
-          .sun-playlist-iframe {
-            height: 100px;
-          }
         }
       `}</style>
     </div>
@@ -342,16 +309,50 @@ const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
             zIndex: 15,
             position: 'relative'
           }} 
-          title="content" 
+          title="Content" 
         />
       );
     case 'image':
       return (
-        <img src={src} style={{ ...baseStyle, objectFit: objectFit }} alt="content" />
+        <img src={src} style={{ ...baseStyle, objectFit: objectFit }} alt="Content" />
       );
     default:
       return <div>Unsupported content type</div>;
   }
+};
+
+const CustomContent = ({ buttonId, onClose }) => {
+  const info = ContentMap[buttonId];
+  if (!info) return <div>Unknown custom content: {buttonId}</div>;
+  if (buttonId === 'btn_c_heart') {
+    return (
+      <img
+        src="/content/btn_c_heart/U.PNG"
+        alt="하트 이미지"
+        style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
+      />
+    );
+  }
+  if (info.type === 'iframe' && info.src) {
+    return (
+      <iframe
+        src={info.src}
+        style={{ width: '100%', height: '100%', border: 'none', background: 'white' }}
+        title={buttonId}
+      />
+    );
+  }
+  if (info.type === 'image' && info.src) {
+    return (
+      <img
+        src={info.src}
+        alt={buttonId}
+        style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
+      />
+    );
+  }
+  // fallback
+  return null;
 };
 
 const ContentDisplay = ({ buttonId, onClose }) => {
@@ -413,11 +414,14 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           onClick={handleContentClick}
           style={{
             position: 'relative',
-            width: buttonId === 'btn_p_note' ? '90vw' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '90vw' : 'auto'),
-            height: buttonId === 'btn_p_note' ? '80vh' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '80vh' : 'auto'),
-            maxWidth: buttonId === 'btn_p_note' ? '1200px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '1200px' : '98vw'),
-            maxHeight: buttonId === 'btn_p_note' ? '800px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '800px' : '98vh'),
-            backgroundColor: buttonId === 'btn_p_note' ? '#000' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? 'rgba(0, 0, 0, 0.95)' : 'transparent'),
+            width: buttonId === 'btn_p_note' ? 'min(1200px, 99vw)' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '90vw' : 'auto'),
+            height: buttonId === 'btn_p_note' ? 'min(800px, 90vh)' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '80vh' : 'auto'),
+            maxWidth: buttonId === 'btn_p_note' ? undefined : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '1200px' : '98vw'),
+            maxHeight: buttonId === 'btn_p_note' ? undefined : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '800px' : '98vh'),
+            backgroundColor: buttonId === 'btn_p_note' ? 'transparent' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? 'rgba(0, 0, 0, 0.95)' : 'transparent'),
+            backgroundImage: buttonId === 'btn_p_note' ? 'url(/content/popup/popup_bg.png)' : undefined,
+            backgroundSize: buttonId === 'btn_p_note' ? 'cover' : undefined,
+            backgroundPosition: buttonId === 'btn_p_note' ? 'center' : undefined,
             borderRadius: buttonId === 'btn_p_note' ? '8px' : (buttonId === 'btn_h_dog' || buttonId === 'btn_h_star' ? '8px' : '0'),
           }}
         >
@@ -486,6 +490,165 @@ const ContentDisplay = ({ buttonId, onClose }) => {
                 return <StarContent />;
               } else if (buttonId === 'btn_w_sun') {
                 return <SunContent />;
+              } else if (buttonId === 'btn_p_note') {
+                return (
+                  <iframe
+                    src={ContentMap[buttonId].src}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      zIndex: 10,
+                      position: 'relative',
+                      background: 'transparent'
+                    }}
+                    title="diary"
+                  />
+                );
+              } else if (buttonId === 'btn_f_rug') {
+                return (
+                  <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    zIndex: 3000,
+                    background: 'black',
+                  }}>
+                    <button
+                      onClick={onClose}
+                      style={{
+                        position: 'absolute',
+                        top: '24px',
+                        left: '24px',
+                        zIndex: 3100,
+                        background: 'none',
+                        color: '#191F28',
+                        border: 'none',
+                        borderRadius: 0,
+                        fontSize: '18px',
+                        fontFamily: 'Pretendard, sans-serif',
+                        fontWeight: 300,
+                        padding: 0,
+                        boxShadow: 'none',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        lineHeight: 1,
+                      }}
+                      aria-label="돌아가기"
+                    >
+                      〈 돌아가기
+                    </button>
+                    <style jsx>{`
+                      @media (max-width: 768px) {
+                        button {
+                          top: 16px !important;
+                          left: 16px !important;
+                          font-size: 16px !important;
+                        }
+                      }
+                      @media (max-width: 480px) {
+                        button {
+                          top: 12px !important;
+                          left: 12px !important;
+                          font-size: 14px !important;
+                        }
+                      }
+                      @media (min-width: 1024px) {
+                        button {
+                          top: 32px !important;
+                          left: 32px !important;
+                          font-size: 20px !important;
+                        }
+                      }
+                    `}</style>
+                    <iframe
+                      src={ContentMap[buttonId].src}
+                      style={{
+                        width: '100vw',
+                        height: '100vh',
+                        border: 'none',
+                        background: 'white',
+                        zIndex: 3001,
+                        display: 'block',
+                      }}
+                      title={buttonId}
+                    />
+                  </div>
+                );
+              } else if (buttonId === 'btn_f_phone') {
+                return (
+                  <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    zIndex: 3000,
+                    background: 'black',
+                  }}>
+                    <button
+                      onClick={onClose}
+                      style={{
+                        position: 'absolute',
+                        top: '24px',
+                        left: '24px',
+                        zIndex: 3100,
+                        background: 'none',
+                        color: '#191F28',
+                        border: 'none',
+                        borderRadius: 0,
+                        fontSize: '18px',
+                        fontFamily: 'Pretendard, sans-serif',
+                        fontWeight: 300,
+                        padding: 0,
+                        boxShadow: 'none',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        lineHeight: 1,
+                      }}
+                      aria-label="돌아가기"
+                    >
+                      〈 돌아가기
+                    </button>
+                    <style jsx>{`
+                      @media (max-width: 768px) {
+                        button {
+                          top: 16px !important;
+                          left: 16px !important;
+                          font-size: 16px !important;
+                        }
+                      }
+                      @media (max-width: 480px) {
+                        button {
+                          top: 12px !important;
+                          left: 12px !important;
+                          font-size: 14px !important;
+                        }
+                      }
+                      @media (min-width: 1024px) {
+                        button {
+                          top: 32px !important;
+                          left: 32px !important;
+                          font-size: 20px !important;
+                        }
+                      }
+                    `}</style>
+                    <iframe
+                      src={ContentMap[buttonId].src}
+                      style={{
+                        width: '100vw',
+                        height: '100vh',
+                        border: 'none',
+                        background: 'white',
+                        zIndex: 3001,
+                        display: 'block',
+                      }}
+                      title={buttonId}
+                    />
+                  </div>
+                );
               } else {
                 return <GenericContent type={contentInfo.type} src={contentInfo.src} onClose={onClose} />;
               }
@@ -540,13 +703,13 @@ const ContentDisplay = ({ buttonId, onClose }) => {
       {/* 비디오 팝업들 */}
       {showVideoA && (
         <VideoPopup
-          videoSrc="/deploy_videos/L.mp4"
+          videoSrc="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/A.mp4"
           onClose={() => setShowVideoA(false)}
         />
       )}
       {showVideoB && (
         <VideoPopup
-          videoSrc="/deploy_videos/M.mp4"
+          videoSrc="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/B.mp4"
           onClose={() => setShowVideoB(false)}
         />
       )}
