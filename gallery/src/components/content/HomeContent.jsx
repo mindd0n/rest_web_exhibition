@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './HomeContent.css';
 
 const HomeContent = () => {
@@ -9,11 +9,11 @@ const HomeContent = () => {
     icon_q: 4,
   });
   const imageDataRef = useRef({});
-  const iconRefs = {
+  const iconRefs = useMemo(() => ({
     icon_o: useRef(null),
     icon_p: useRef(null),
     icon_q: useRef(null),
-  };
+  }), []);
 
   useEffect(() => {
     Object.entries(iconRefs).forEach(([id, ref]) => {

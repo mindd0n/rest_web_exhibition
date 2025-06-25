@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback, Suspense } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { EffectComposer, Outline } from '@react-three/postprocessing';
@@ -62,7 +62,6 @@ const Button = React.memo(function Button({
   const meshRef = useRef();
   
   const handleClick = useCallback((e) => {
-    // 모든 벽면 버튼 클릭 시 로그
     console.log(`벽면 버튼 클릭: ${buttonKey}`);
     if (!image || !texture || !canvas) return;
     const uv = e.uv;
@@ -85,7 +84,7 @@ const Button = React.memo(function Button({
       );
       setHoveredObject(null);
     }
-  }, [position, image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton]);
+  }, [image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton]);
 
   const handlePointerMove = useCallback((e) => {
     if (!image || !texture || !canvas) return;
@@ -96,12 +95,12 @@ const Button = React.memo(function Button({
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const alpha = ctx.getImageData(x, y, 1, 1).data[3] / 255;
     if (alpha > 0.05 && hoveredObject !== buttonKey) {
-      e.stopPropagation(); // 그림 부분만 stopPropagation
+      e.stopPropagation();
       setHoveredObject(buttonKey);
     } else if (alpha <= 0.05 && hoveredObject === buttonKey) {
       setHoveredObject(null);
     }
-  }, [position, image, texture, canvas, hoveredObject, buttonKey, setHoveredObject]);
+  }, [image, texture, canvas, hoveredObject, buttonKey, setHoveredObject]);
 
   const handlePointerOut = useCallback(() => {
     if (hoveredObject === buttonKey) {
@@ -134,7 +133,7 @@ const Button = React.memo(function Button({
 // getZoomTargetForButton 함수를 일반 함수로 변경
 const getZoomTargetForButton = (position, wallType) => {
   const [x, y, z] = position;
-  const distance = minDistance; // 더욱 강한 줌인
+  const distance = minDistance;
   let cameraPos, target;
   target = new THREE.Vector3(x, y, z);
   switch (wallType) {
@@ -168,7 +167,6 @@ const Room = ({
     floor: '/images/walls/wall_floor.png',
   });
   
-  // 모든 텍스처 로딩 후 콜백
   useEffect(() => {
     const manager = new THREE.LoadingManager();
     manager.onLoad = () => {
@@ -176,8 +174,7 @@ const Room = ({
     };
   }, []);
 
-  // wallButtonData를 컴포넌트 내부로 이동
-  const wallButtonData = {
+  const wallButtonData = useMemo(() => ({
     'front': [
       { key: 'btn_p_go',       src: '/images/buttons/wall_photo_btn/btn_p_go.png',       hoverSrc: '/images/buttons/wall_photo_btn/btn_p_go_hover.png' },
       { key: 'btn_p_tree',     src: '/images/buttons/wall_photo_btn/btn_p_tree.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_tree_hover.png' },
@@ -209,7 +206,7 @@ const Room = ({
       { key: 'btn_f_rug',    src: '/images/buttons/wall_floor_btn/btn_f_rug.png',    hoverSrc: '/images/buttons/wall_floor_btn/btn_f_rug_hover.png' },
       { key: 'btn_f_phone',  src: '/images/buttons/wall_floor_btn/btn_f_phone.png',  hoverSrc: '/images/buttons/wall_floor_btn/btn_f_phone_hover.png' },
     ],
-  };
+  }), []);
 
   const buttons = useMemo(() => {
     return Object.entries(wallButtonData).flatMap(([wallType, wallButtons]) => 

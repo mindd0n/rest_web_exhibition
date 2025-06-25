@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
-import InteractiveGoButton from './InteractiveGoButton.jsx';
 import PavilionContent from './content/PavilionContent.jsx';
 import HomeContent from './content/HomeContent.jsx';
-import DiaryContent from './content/DiaryContent.jsx';
+import './ContentDisplay.css';
 
 // 비디오 팝업 컴포넌트
 const VideoPopup = ({ videoSrc, onClose }) => {
@@ -32,7 +30,7 @@ const VideoPopup = ({ videoSrc, onClose }) => {
           maxHeight: '800px',
         }}
         onClick={(e) => e.stopPropagation()}
-      >ㅈ
+      >
         <button
           onClick={onClose}
           style={{
@@ -319,40 +317,6 @@ const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
     default:
       return <div>Unsupported content type</div>;
   }
-};
-
-const CustomContent = ({ buttonId, onClose }) => {
-  const info = ContentMap[buttonId];
-  if (!info) return <div>Unknown custom content: {buttonId}</div>;
-  if (buttonId === 'btn_c_heart') {
-    return (
-      <img
-        src="/content/btn_c_heart/U.PNG"
-        alt="하트 이미지"
-        style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
-      />
-    );
-  }
-  if (info.type === 'iframe' && info.src) {
-    return (
-      <iframe
-        src={info.src}
-        style={{ width: '100%', height: '100%', border: 'none', background: 'white' }}
-        title={buttonId}
-      />
-    );
-  }
-  if (info.type === 'image' && info.src) {
-    return (
-      <img
-        src={info.src}
-        alt={buttonId}
-        style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
-      />
-    );
-  }
-  // fallback
-  return null;
 };
 
 const ContentDisplay = ({ buttonId, onClose }) => {
@@ -671,50 +635,3 @@ const ContentDisplay = ({ buttonId, onClose }) => {
           />
           
           <style jsx>{`
-            .back-button {
-              position: absolute;
-              right: 1%;
-              bottom: 8%;
-              width: 100px;
-              height: auto;
-              cursor: pointer;
-              z-index: 2;
-            }
-            
-            @media (max-width: 1024px) {
-              .back-button {
-                width: 80px;
-                right: 2%;
-                bottom: 6%;
-              }
-            }
-            
-            @media (max-width: 768px) {
-              .back-button {
-                width: 60px;
-                right: 3%;
-                bottom: 4%;
-              }
-            }
-          `}</style>
-        </div>
-      </div>
-      
-      {/* 비디오 팝업들 */}
-      {showVideoA && (
-        <VideoPopup
-          videoSrc="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/A.mp4"
-          onClose={() => setShowVideoA(false)}
-        />
-      )}
-      {showVideoB && (
-        <VideoPopup
-          videoSrc="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/B.mp4"
-          onClose={() => setShowVideoB(false)}
-        />
-      )}
-    </>
-  );
-};
-
-export default ContentDisplay;
