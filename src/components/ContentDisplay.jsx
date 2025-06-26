@@ -8,6 +8,65 @@ import DiaryContent from './content/DiaryContent.jsx';
 // S3 기본 URL
 const S3_BASE_URL = 'https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media';
 
+// S3 리소스 로딩 재시도 함수
+const loadS3Resource = async (url, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+      });
+      
+      if (response.ok) {
+        return response;
+      }
+    } catch (error) {
+      console.warn(`S3 리소스 로딩 실패 (시도 ${i + 1}/${retries}):`, url, error);
+      
+      if (i < retries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+      }
+    }
+  }
+  
+  throw new Error(`S3 리소스 로딩 실패: ${url}`);
+};
+
+// 에러 상태를 표시하는 컴포넌트
+const ErrorDisplay = ({ message, onRetry }) => {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      padding: '20px',
+      textAlign: 'center',
+      color: '#666'
+    }}>
+      <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⚠️</div>
+      <h3 style={{ marginBottom: '10px', color: '#333' }}>콘텐츠를 불러올 수 없습니다</h3>
+      <p style={{ marginBottom: '20px' }}>{message}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#fff0e6',
+            border: '1px solid #ddd',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          다시 시도
+        </button>
+      )}
+    </div>
+  );
+};
+
 // 비디오 팝업 컴포넌트
 const VideoPopup = ({ videoSrc, onClose }) => {
   return (
@@ -282,47 +341,118 @@ const SunContent = () => {
 };
 
 const GenericContent = ({ type, src, onClose, objectFit = 'contain' }) => {
-  const baseStyle = {
-    width: '100%',
-    height: '100%',
-    border: 'none',
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const handleError = () => {
+    setError(true);
+    setLoading(false);
   };
+
+  const handleLoad = () => {
+    setLoading(false);
+  };
+
+  const handleRetry = () => {
+    setError(false);
+    setLoading(true);
+  };
+
+  if (error) {
+    return (
+      <ErrorDisplay 
+        message="미디어 파일을 불러올 수 없습니다. 네트워크 연결을 확인해주세요." 
+        onRetry={handleRetry}
+      />
+    );
+  }
 
   switch (type) {
     case 'video':
       return (
-        <video 
-          src={src} 
-          style={{ 
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain' 
-          }} 
-          controls loop playsInline 
-        />
-      );
-    case 'iframe':
-      return (
-        <iframe 
-          src={src} 
-          style={{ 
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            minHeight: '500px',
-            backgroundColor: 'transparent',
-            zIndex: 15,
-            position: 'relative'
-          }} 
-          title="content" 
-        />
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          {loading && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#666'
+            }}>
+              비디오 로딩 중...
+            </div>
+          )}
+          <video
+            src={src}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: objectFit,
+            }}
+            controls
+            loop
+            playsInline
+            onError={handleError}
+            onLoadedData={handleLoad}
+          />
+        </div>
       );
     case 'image':
       return (
-        <img src={src} style={{ ...baseStyle, objectFit: objectFit }} alt="content" />
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          {loading && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#666'
+            }}>
+              이미지 로딩 중...
+            </div>
+          )}
+          <img
+            src={src}
+            alt="콘텐츠"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: objectFit,
+            }}
+            onError={handleError}
+            onLoad={handleLoad}
+          />
+        </div>
+      );
+    case 'iframe':
+      return (
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          {loading && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#666'
+            }}>
+              페이지 로딩 중...
+            </div>
+          )}
+          <iframe
+            src={src}
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none',
+            }}
+            title="콘텐츠"
+            onError={handleError}
+            onLoad={handleLoad}
+          />
+        </div>
       );
     default:
-      return <div>Unsupported content type</div>;
+      return <div>지원하지 않는 콘텐츠 타입입니다.</div>;
   }
 };
 
