@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './HomeContent.css';
 
 const HomeContent = () => {
@@ -9,11 +9,11 @@ const HomeContent = () => {
     icon_q: 4,
   });
   const imageDataRef = useRef({});
-  const iconRefs = {
+  const iconRefs = useMemo(() => ({
     icon_o: useRef(null),
     icon_p: useRef(null),
     icon_q: useRef(null),
-  };
+  }), []);
 
   useEffect(() => {
     Object.entries(iconRefs).forEach(([id, ref]) => {
@@ -29,7 +29,7 @@ const HomeContent = () => {
         imageDataRef.current[id] = ctx.getImageData(0, 0, img.width, img.height).data;
       };
     });
-  }, []);
+  }, [iconRefs]);
 
   // iframe 메시지 이벤트 리스너 추가
   useEffect(() => {
@@ -92,9 +92,9 @@ const HomeContent = () => {
     if (!selectedContent) return null;
 
     switch (selectedContent) {
-      case 'icon_o': return <video key="video_o" src="/deploy_videos/O.mp4" style={{ width: '100%', height: '100%', objectFit: 'contain' }} controls autoPlay loop playsInline />;
+      case 'icon_o': return <video key="video_o" src="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/O.mp4" style={{ width: '100%', height: '100%', objectFit: 'contain' }} controls autoPlay loop playsInline />;
       case 'icon_p': return <iframe key="iframe_p" src="/content/btn_h_home/P.수면신문/dist/index.html" style={{ width: '100%', height: '100%', border: 'none', minHeight: '600px' }} title="수면신문" />;
-      case 'icon_q': return <video key="video_q" src="/deploy_videos/Q.mp4" style={{ width: '100%', height: '100%', objectFit: 'contain' }} controls autoPlay loop playsInline />;
+      case 'icon_q': return <video key="video_q" src="https://rest-exhibition.s3.ap-northeast-2.amazonaws.com/deploy_media/Q.mp4" style={{ width: '100%', height: '100%', objectFit: 'contain' }} controls autoPlay loop playsInline />;
       default: return null;
     }
   };

@@ -17,28 +17,47 @@ export const useButtonImageData = (src, wallType) => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (!src) return;
+    
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = src;
     
     img.onload = () => {
-      // plane 전체를 꽉 채우는 크기
-      const size = WALL_SIZES[wallType] || [166.68, 150];
-      setSize(size);
-      // 텍스처 생성
-      const newTexture = new THREE.TextureLoader().load(src);
-      newTexture.minFilter = THREE.LinearFilter;
-      newTexture.magFilter = THREE.LinearFilter;
-      setTexture(newTexture);
-      // 캔버스 생성
-      const newCanvas = document.createElement('canvas');
-      newCanvas.width = img.width;
-      newCanvas.height = img.height;
-      const ctx = newCanvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      setCanvas(newCanvas);
-      setImage(img);
-      setReady(true);
+      try {
+        // plane 전체를 꽉 채우는 크기
+        const size = WALL_SIZES[wallType] || [166.68, 150];
+        setSize(size);
+        // 텍스처 생성
+        const newTexture = new THREE.TextureLoader().load(src);
+        newTexture.minFilter = THREE.LinearFilter;
+        newTexture.magFilter = THREE.LinearFilter;
+        setTexture(newTexture);
+        // 캔버스 생성
+        const newCanvas = document.createElement('canvas');
+        newCanvas.width = img.width;
+        newCanvas.height = img.height;
+        const ctx = newCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        setCanvas(newCanvas);
+        setImage(img);
+        setReady(true);
+        
+        console.log(`버튼 이미지 로딩 성공: ${src}`);
+      } catch (error) {
+        console.error(`버튼 이미지 로딩 실패: ${src}`, error);
+        setReady(false);
+      }
+    };
+    
+    img.onerror = (error) => {
+      console.error(`이미지 로딩 실패: ${src}`, error);
+      setReady(false);
+    };
+    
+    img.src = src;
+    
+    return () => {
+      setReady(false);
     };
   }, [src, wallType]);
 

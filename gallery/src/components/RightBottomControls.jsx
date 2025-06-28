@@ -41,7 +41,7 @@ const RightBottomControls = () => {
                 audioRef.current = null;
             }
         };
-    }, []);
+    }, [isMusicOn]);
 
     const isPixelTransparent = (x, y, buttonId, element) => {
         const imageData = imageDataRef.current[buttonId];

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback, Suspense } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { EffectComposer, Outline } from '@react-three/postprocessing';
@@ -7,14 +7,11 @@ import './styles.css';
 import { useTexture } from '@react-three/drei';
 import { useButtonImageData } from '../hooks/useButtonImageData';
 import ContentDisplay from './ContentDisplay.jsx';
-import InteractiveGoButton from './InteractiveGoButton.jsx';
 import gsap from 'gsap';
 
 // 버튼 위치 계산 함수 (예시)
 function getButtonPosition(wallType, buttonKey, index, total) {
   const gap = 20;
-  
-  // 기존 벽면들은 현재 방식 유지
   const baseY = 0;
   const baseZ = 0.1;
   return [index * gap - (total - 1) * gap / 2, baseY, baseZ];
@@ -26,16 +23,8 @@ const roomWidth = 166.68; // 150 * 10 / 9
 const roomDepth = 166.68;
 const viewerHeight = 45;
 
-// Lighting configuration
-const ambientLightIntensity = 1.5;
-const ambientLightColor = "#fff0e6";
-const centralLightIntensity = 1.8;
-const centralLightColor = "#ffe4cc";
-const wallLightIntensity = 1.2;
-const wallLightColor = "#fff0e6";
-
 const minDistance = 0.5;
-const maxDistance = Math.max(roomWidth, roomHeight, roomDepth) / 2; // 큐브 밖으로 나가지 않도록 최대 거리 설정
+const maxDistance = Math.max(roomWidth, roomHeight, roomDepth) / 2;
 
 // 초기 카메라 상태를 상수로 정의
 const INITIAL_CAMERA_POSITION = new THREE.Vector3(0, viewerHeight, roomDepth / 2 - 1);
@@ -51,153 +40,6 @@ const textureSettings = {
   type: THREE.UnsignedByteType,
   generateMipmaps: false
 };
-
-// 텍스처 로딩 함수
-const loadTexture = (path, uvTransform) => {
-  return textureLoader.load(path, texture => {
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 1);
-    Object.assign(texture, textureSettings);
-    if (uvTransform) {
-      texture.repeat.set(...uvTransform.repeat);
-      texture.offset.set(...uvTransform.offset);
-    }
-  });
-};
-
-// 버튼 centroid 픽셀 좌표 (이미지 크기: 2000x1800)
-const buttonCentroids = {
-  sun:    { x: 424.06,  y: 588.15 },
-  path:   { x: 1069.95, y: 1367.17 },
-  sign:   { x: 1813.97, y: 945.93 },
-  bridge: { x: 416.34,  y: 1056.21 },
-};
-
-// 버튼 bounding box 위치 및 크기 (픽셀)
-const buttonBBoxes = {
-  sun:    { min_x: 0,    min_y: 268,  width: 895,  height: 589 },
-  path:   { min_x: 0,    min_y: 419,  width: 1827, height: 1381 },
-  sign:   { min_x: 1580, min_y: 619,  width: 420,  height: 818 },
-  bridge: { min_x: 0,    min_y: 857,  width: 964,  height: 443 },
-};
-
-// 벽별 normal 벡터 정의
-const wallNormals = {
-  front: [0, 0, 1],
-  back: [0, 0, -1],
-  left: [1, 0, 0],
-  right: [-1, 0, 0],
-};
-
-// 3D 중심 좌표 변환 함수
-function bboxCenterTo3D({min_x, min_y, width, height}) {
-  const center_x = min_x + width / 2;
-  const center_y = min_y + height / 2;
-  const left = center_x / 2000;
-  const top = center_y / 1800;
-  const posX = (left - 0.5) * roomWidth;
-  const posY = (0.5 - top) * roomHeight;
-  return [posX, posY];
-}
-
-// 3D 크기 변환 함수 (벽/천장/바닥별로 plane 크기 맞춤)
-function bboxTo3DByWall({width, height}, wallType) {
-  // 모든 벽은 기존과 동일
-  return [width / 2000 * roomWidth, height / 1800 * roomHeight];
-}
-
-// UV repeat/offset 계산 함수
-function getUVTransform({min_x, min_y, width, height}) {
-  const repeatX = width / 2000;
-  const repeatY = height / 1800;
-  const offsetX = min_x / 2000;
-  const offsetY = 1 - (min_y + height) / 1800;
-  return { repeat: [repeatX, repeatY], offset: [offsetX, offsetY] };
-}
-
-// 카메라가 1번 레이어도 렌더링하도록 설정
-function EnableLayer1OnCamera() {
-  const { camera } = useThree();
-  useEffect(() => {
-    camera.layers.enable(1);
-  }, [camera]);
-  return null;
-}
-
-// Glow Ring ShaderMaterial 생성 함수 (useRef + useFrame)
-function useGlowRingMaterial() {
-  const materialRef = useRef();
-  useFrame(() => {
-    if (materialRef.current) {
-      materialRef.current.uniforms.opacity.value = 0.7;
-    }
-  });
-  if (!materialRef.current) {
-    materialRef.current = new THREE.ShaderMaterial({
-      uniforms: {
-        color: { value: new THREE.Color(0x00ff00) },
-        radius: { value: 0.35 },
-        width: { value: 0.3 },
-        opacity: { value: 1 }
-      },
-      transparent: true,
-      depthWrite: false,
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 color;
-        uniform float radius;
-        uniform float width;
-        uniform float opacity;
-        varying vec2 vUv;
-        void main() {
-          float dist = distance(vUv, vec2(0.5, 0.5));
-          float edge0 = radius;
-          float edge1 = radius + width;
-          float glow = smoothstep(edge1, edge0, dist);
-          gl_FragColor = vec4(color, glow * opacity);
-        }
-      `
-    });
-  }
-  return materialRef.current;
-}
-
-// 알파마스크 기반 Glow ShaderMaterial 생성 함수
-function useAlphaGlowMaterial(texture) {
-  return useMemo(() => new THREE.ShaderMaterial({
-    uniforms: {
-      map: { value: texture },
-      color: { value: new THREE.Color(0x00ff00) },
-      opacity: { value: 1 }
-    },
-    transparent: true,
-    depthWrite: false,
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D map;
-      uniform vec3 color;
-      uniform float opacity;
-      varying vec2 vUv;
-      void main() {
-        float a = texture2D(map, vUv).a;
-        float edge = smoothstep(0.45, 0.55, a); // 알파 경계에서만 빛나게
-        gl_FragColor = vec4(color, edge * opacity);
-      }
-    `
-  }), [texture]);
-}
 
 // Button 컴포넌트 수정
 const Button = React.memo(function Button({ 
@@ -217,13 +59,10 @@ const Button = React.memo(function Button({
 }) {
   const isHovered = hoveredObject === buttonKey;
   const [size, texture, image, canvas, ready] = useButtonImageData(isHovered ? hoverSrc : src, wallType);
-  const z = position && position[2] !== undefined ? position[2] : 0.1;
   const meshRef = useRef();
   
   const handleClick = useCallback((e) => {
-    // 모든 벽면 버튼 클릭 시 로그
     console.log(`벽면 버튼 클릭: ${buttonKey}`);
-    const pos = Array.isArray(position) ? position : [0, 0];
     if (!image || !texture || !canvas) return;
     const uv = e.uv;
     if (!uv) return;
@@ -233,7 +72,7 @@ const Button = React.memo(function Button({
     const alpha = ctx.getImageData(x, y, 1, 1).data[3] / 255;
     if (alpha > 0.05) {
       e.stopPropagation();
-      const zoomTarget = getZoomTargetForButton(pos, wallType);
+      const zoomTarget = getZoomTargetForButton(position, wallType);
       animateCamera(
         {
           position: zoomTarget.position,
@@ -245,10 +84,9 @@ const Button = React.memo(function Button({
       );
       setHoveredObject(null);
     }
-  }, [position, image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton]);
+  }, [image, texture, canvas, buttonKey, wallType, animateCamera, setHoveredObject, setSelectedButton]);
 
   const handlePointerMove = useCallback((e) => {
-    const pos = Array.isArray(position) ? position : [0, 0];
     if (!image || !texture || !canvas) return;
     const uv = e.uv;
     if (!uv) return;
@@ -257,10 +95,12 @@ const Button = React.memo(function Button({
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const alpha = ctx.getImageData(x, y, 1, 1).data[3] / 255;
     if (alpha > 0.05 && hoveredObject !== buttonKey) {
-      e.stopPropagation(); // 그림 부분만 stopPropagation
+      e.stopPropagation();
       setHoveredObject(buttonKey);
+    } else if (alpha <= 0.05 && hoveredObject === buttonKey) {
+      setHoveredObject(null);
     }
-  }, [position, image, texture, canvas, hoveredObject, buttonKey, setHoveredObject]);
+  }, [image, texture, canvas, hoveredObject, buttonKey, setHoveredObject]);
 
   const handlePointerOut = useCallback(() => {
     if (hoveredObject === buttonKey) {
@@ -284,38 +124,16 @@ const Button = React.memo(function Button({
         map={texture}
         transparent
         alphaTest={0.5}
-        depthWrite={false}
+        depthWrite={true}
       />
     </mesh>
   );
 });
 
-// 각 벽별 버튼 파일명 명시적으로 관리
-const wallButtonFiles = {
-  front: [
-    'btn_p_go.png', 'btn_p_tree.png', 'btn_p_note.png', 'btn_p_pavilion.png'
-  ],
-  right: [
-    'btn_h_home.png', 'btn_h_star.png', 'btn_h_dog.png', 'btn_h_ribbon.png'
-  ],
-  back: [
-    'btn_w_bridge.png', 'btn_w_sign.png', 'btn_w_sun.png', 'btn_w_walk.png'
-  ],
-  left: [
-    'btn_b_busstop.png', 'btn_b_bus.png', 'btn_b_home.png'
-  ]
-};
-const wallButtonFolders = {
-  front: 'wall_photo_btn',
-  right: 'wall_home_btn',
-  back: 'wall_walk_btn',
-  left: 'wall_bus-stop_btn',
-};
-
 // getZoomTargetForButton 함수를 일반 함수로 변경
 const getZoomTargetForButton = (position, wallType) => {
   const [x, y, z] = position;
-  const distance = minDistance; // 더욱 강한 줌인
+  const distance = minDistance;
   let cameraPos, target;
   target = new THREE.Vector3(x, y, z);
   switch (wallType) {
@@ -323,6 +141,8 @@ const getZoomTargetForButton = (position, wallType) => {
     case 'back': cameraPos = new THREE.Vector3(x, y, z - distance); break;
     case 'left': cameraPos = new THREE.Vector3(x + distance, y, z); break;
     case 'right': cameraPos = new THREE.Vector3(x - distance, y, z); break;
+    case 'ceiling': cameraPos = new THREE.Vector3(x, y - distance, z); break;
+    case 'floor': cameraPos = new THREE.Vector3(x, y + distance, z); break;
     default: cameraPos = new THREE.Vector3(x, y, z + distance);
   }
   return { position: cameraPos, target };
@@ -347,7 +167,6 @@ const Room = ({
     floor: '/images/walls/wall_floor.png',
   });
   
-  // 모든 텍스처 로딩 후 콜백
   useEffect(() => {
     const manager = new THREE.LoadingManager();
     manager.onLoad = () => {
@@ -355,8 +174,7 @@ const Room = ({
     };
   }, []);
 
-  // wallButtonData를 컴포넌트 내부로 이동
-  const wallButtonData = {
+  const wallButtonData = useMemo(() => ({
     'front': [
       { key: 'btn_p_go',       src: '/images/buttons/wall_photo_btn/btn_p_go.png',       hoverSrc: '/images/buttons/wall_photo_btn/btn_p_go_hover.png' },
       { key: 'btn_p_tree',     src: '/images/buttons/wall_photo_btn/btn_p_tree.png',     hoverSrc: '/images/buttons/wall_photo_btn/btn_p_tree_hover.png' },
@@ -380,7 +198,15 @@ const Room = ({
       { key: 'btn_h_star',   src: '/images/buttons/wall_home_btn/btn_h_star.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_star_hover.png' },
       { key: 'btn_h_home',   src: '/images/buttons/wall_home_btn/btn_h_home.png',   hoverSrc: '/images/buttons/wall_home_btn/btn_h_home_hover.png' },
     ],
-  };
+    'ceiling': [
+      { key: 'btn_c_lamp',   src: '/images/buttons/wall_ceiling_btn/btn_c_lamp.png',   hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_lamp_hover.png' },
+      { key: 'btn_c_heart',  src: '/images/buttons/wall_ceiling_btn/btn_c_heart.png',  hoverSrc: '/images/buttons/wall_ceiling_btn/btn_c_heart_hover.png' },
+    ],
+    'floor': [
+      { key: 'btn_f_rug',    src: '/images/buttons/wall_floor_btn/btn_f_rug.png',    hoverSrc: '/images/buttons/wall_floor_btn/btn_f_rug_hover.png' },
+      { key: 'btn_f_phone',  src: '/images/buttons/wall_floor_btn/btn_f_phone.png',  hoverSrc: '/images/buttons/wall_floor_btn/btn_f_phone_hover.png' },
+    ],
+  }), []);
 
   const buttons = useMemo(() => {
     return Object.entries(wallButtonData).flatMap(([wallType, wallButtons]) => 
@@ -389,7 +215,7 @@ const Room = ({
         return { ...btn, wallType, position, btnIdx: index, btnTotal: wallButtons.length };
       })
     );
-  }, []);
+  }, [wallButtonData]);
 
   return (
     <>
@@ -419,11 +245,23 @@ const Room = ({
                 side={THREE.FrontSide}
               />
             </mesh>
-            {/* 벽 중앙에 버튼 추가 - 천장과 바닥은 제외 */}
-            {wall.type !== 'ceiling' && wall.type !== 'floor' && wallButtonData[wall.type]?.map((btn, idx) => {
+            {/* 벽 중앙에 버튼 추가 - 천장과 바닥도 포함 */}
+            {wallButtonData[wall.type]?.map((btn, idx) => {
               let z;
               let pos = [0, 0, 0];
-              if (wall.type === 'front' && btn.src.includes('btn_p_tree')) {
+              
+              // 천장 버튼 위치 조정
+              if (wall.type === 'ceiling') {
+                z = -0.1 - idx * 0.05; // 천장은 아래쪽으로 더 멀리, 인덱스별로 간격
+                pos = [0, 0, z];
+              }
+              // 바닥 버튼 위치 조정  
+              else if (wall.type === 'floor') {
+                z = 0.1 + idx * 0.05; // 바닥은 위쪽으로 더 멀리, 인덱스별로 간격
+                pos = [0, 0, z]; // 중앙에 그대로 배치
+              }
+              // 기존 벽 버튼들
+              else if (wall.type === 'front' && btn.src.includes('btn_p_tree')) {
                 z = -0.05;
               } else if (wall.type === 'back' && btn.key === 'btn_w_sign') {
                 z = 0.15; // Back 벽은 180도 회전되어 있어서 큰 숫자가 앞으로
@@ -453,7 +291,7 @@ const Room = ({
                   buttonKey={btn.key}
                   position={pos}
                   src={btn.src}
-                  hoverSrc={btn.src.replace(/\.png$/, '_hover.png')}
+                  hoverSrc={btn.hoverSrc}
                   wallType={wall.type}
                   setHoveredObject={setHoveredObject}
                   hoveredObject={hoveredObject}
@@ -473,14 +311,11 @@ const Room = ({
 export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
   const [isHovered, setIsHovered] = useState(false);
   const buttonRef = useRef();
-  const [outlineReady, setOutlineReady] = useState(false);
-  const [cursor, setCursor] = useState(`url(/images/cursor.png) 16 44, auto`);
   const [hoveredObject, setHoveredObject] = useState(null);
   const [selectedButton, setSelectedButton] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const controlsRef = useRef();
   const [restoreView, setRestoreView] = useState(null);
-  const [texturesLoaded, setTexturesLoaded] = useState(false);
 
   // 텍스처 로딩 상태 추적
   useEffect(() => {
@@ -492,7 +327,6 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
         if (progress >= 100) {
           progress = 100;
           clearInterval(interval);
-          setTexturesLoaded(true);
           if (onLoadingComplete) onLoadingComplete();
         }
         if (onLoadingProgress) onLoadingProgress(progress);
@@ -527,25 +361,6 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
       }
     });
   }, []);
-
-  // 버튼 클릭 시 현재 카메라 위치/target 저장 (클릭 직전에 저장!)
-  const handleButtonClick = useCallback((position, wallType, buttonKey) => {
-    if (selectedButton) return; // 이미 팝업이 열려 있으면 무시
-    // 버튼 클릭 직전 시점 저장
-    setRestoreView({
-      position: controlsRef.current.object.position.clone(),
-      target: controlsRef.current.target.clone()
-    });
-    const zoomTarget = getZoomTargetForButton(position, wallType);
-    animateCamera(
-      {
-        position: zoomTarget.position,
-        target: zoomTarget.target
-      },
-      1.5,
-      () => setSelectedButton(buttonKey)
-    );
-  }, [animateCamera, selectedButton]);
 
   // 복귀 시 항상 restoreView로 animateCamera, 복귀 후 restoreView는 null로 초기화
   const handleRestore = useCallback(() => {
@@ -582,21 +397,6 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleRestore]);
 
-  const handleOverlayClick = handleRestore;
-
-  useEffect(() => {
-    if (isHovered && buttonRef.current && buttonRef.current.parent) {
-      setOutlineReady(true);
-    } else {
-      setOutlineReady(false);
-    }
-  }, [isHovered]);
-
-  // 텍스처가 로딩되지 않았으면 아무것도 렌더링하지 않음
-  // if (!texturesLoaded) {
-  //   return null;
-  // }
-
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
       <div
@@ -614,10 +414,10 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
             antialias: true,
             powerPreference: 'high-performance'
           }}
-        camera={{ 
-            position: INITIAL_CAMERA_POSITION,
-            fov: INITIAL_CAMERA_FOV,
-          }}
+          camera={{ 
+              position: INITIAL_CAMERA_POSITION,
+              fov: INITIAL_CAMERA_FOV,
+            }}
           onCreated={({ camera }) => {
             camera.lookAt(INITIAL_CAMERA_LOOKAT);
             camera.layers.enable(1);
@@ -642,16 +442,16 @@ export default function RoomScene({ onLoadingProgress, onLoadingComplete }) {
               setSelectedButton={setSelectedButton}
               animateCamera={animateCamera}
             />
+            <EffectComposer>
+              <Outline
+                selection={hoveredObject && buttonRef.current ? [buttonRef.current.getObjectByName(hoveredObject)].filter(Boolean) : []}
+                edgeStrength={100}
+                visibleEdgeColor={0x00ff00}
+                hiddenEdgeColor={0x00ff00}
+                blur
+              />
+            </EffectComposer>
           </Suspense>
-          <EffectComposer>
-            <Outline
-              selection={hoveredObject && buttonRef.current ? [buttonRef.current.getObjectByName(hoveredObject)].filter(Boolean) : []}
-              edgeStrength={100}
-              visibleEdgeColor={0x00ff00}
-              hiddenEdgeColor={0x00ff00}
-              blur
-            />
-          </EffectComposer>
         </Canvas>
       </div>
 
