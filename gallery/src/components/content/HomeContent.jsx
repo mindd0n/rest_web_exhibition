@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './HomeContent.css';
 
 const HomeContent = () => {
@@ -9,11 +9,14 @@ const HomeContent = () => {
     icon_q: 4,
   });
   const imageDataRef = useRef({});
-  const iconRefs = useMemo(() => ({
-    icon_o: useRef(null),
-    icon_p: useRef(null),
-    icon_q: useRef(null),
-  }), []);
+  const iconORef = useRef(null);
+  const iconPRef = useRef(null);
+  const iconQRef = useRef(null);
+  const iconRefs = {
+    icon_o: iconORef,
+    icon_p: iconPRef,
+    icon_q: iconQRef,
+  };
 
   useEffect(() => {
     Object.entries(iconRefs).forEach(([id, ref]) => {
@@ -111,13 +114,13 @@ const HomeContent = () => {
       {/* 아이콘 버튼들 - 색이 있는 부분만 클릭 가능 */}
       <div className="icons-wrapper">
         <div className="icon-button icon-o" style={{ zIndex: zIndexOrder.icon_o }}>
-          <img ref={iconRefs.icon_o} src="/content/btn_h_home/icon_o.png" alt="Icon O" className="icon-image" />
+          <img ref={iconORef} src="/content/btn_h_home/icon_o.png" alt="Icon O" className="icon-image" />
         </div>
         <div className="icon-button icon-p" style={{ zIndex: zIndexOrder.icon_p }}>
-          <img ref={iconRefs.icon_p} src="/content/btn_h_home/icon_p.png" alt="Icon P" className="icon-image" />
+          <img ref={iconPRef} src="/content/btn_h_home/icon_p.png" alt="Icon P" className="icon-image" />
         </div>
         <div className="icon-button icon-q" style={{ zIndex: zIndexOrder.icon_q }}>
-          <img ref={iconRefs.icon_q} src="/content/btn_h_home/icon_q.png" alt="Icon Q" className="icon-image" />
+          <img ref={iconQRef} src="/content/btn_h_home/icon_q.png" alt="Icon Q" className="icon-image" />
         </div>
       </div>
 
